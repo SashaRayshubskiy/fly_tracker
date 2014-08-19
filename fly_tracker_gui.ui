@@ -1,0 +1,557 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FlyTracker</class>
+ <widget class="QMainWindow" name="FlyTracker">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>794</width>
+    <height>578</height>
+   </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>800</width>
+    <height>600</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QPushButton" name="start_button">
+    <property name="geometry">
+     <rect>
+      <x>6</x>
+      <y>30</y>
+      <width>111</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Start</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="stop_button">
+    <property name="geometry">
+     <rect>
+      <x>6</x>
+      <y>88</y>
+      <width>111</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::LeftToRight</enum>
+    </property>
+    <property name="text">
+     <string>Stop</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="infuse_button">
+    <property name="geometry">
+     <rect>
+      <x>134</x>
+      <y>100</y>
+      <width>99</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Infuse</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="withdraw_button">
+    <property name="geometry">
+     <rect>
+      <x>134</x>
+      <y>130</y>
+      <width>99</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Withdraw</string>
+    </property>
+   </widget>
+   <widget class="QFrame" name="camera2">
+    <property name="geometry">
+     <rect>
+      <x>456</x>
+      <y>12</y>
+      <width>161</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+   </widget>
+   <widget class="QFrame" name="camera1">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>12</y>
+      <width>161</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="rate_box">
+    <property name="geometry">
+     <rect>
+      <x>126</x>
+      <y>16</y>
+      <width>51</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>16777215</width>
+      <height>16777214</height>
+     </size>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
+    </property>
+    <property name="decimals">
+     <number>1</number>
+    </property>
+    <property name="maximum">
+     <double>10.000000000000000</double>
+    </property>
+    <property name="singleStep">
+     <double>0.100000000000000</double>
+    </property>
+    <property name="value">
+     <double>10.000000000000000</double>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>184</x>
+      <y>20</y>
+      <width>69</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Rate (mL/h)</string>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="diameter_box">
+    <property name="geometry">
+     <rect>
+      <x>126</x>
+      <y>50</y>
+      <width>51</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
+    </property>
+    <property name="decimals">
+     <number>1</number>
+    </property>
+    <property name="value">
+     <double>14.000000000000000</double>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>182</x>
+      <y>56</y>
+      <width>91</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Diameter (mm)</string>
+    </property>
+   </widget>
+   <widget class="Line" name="line">
+    <property name="geometry">
+     <rect>
+      <x>8</x>
+      <y>166</y>
+      <width>781</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="Line" name="line_2">
+    <property name="geometry">
+     <rect>
+      <x>262</x>
+      <y>6</y>
+      <width>16</width>
+      <height>163</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
+    </property>
+   </widget>
+   <widget class="QFrame" name="trial_run">
+    <property name="geometry">
+     <rect>
+      <x>422</x>
+      <y>194</y>
+      <width>357</width>
+      <height>321</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+   </widget>
+   <widget class="QFrame" name="cummulative_run">
+    <property name="geometry">
+     <rect>
+      <x>632</x>
+      <y>12</y>
+      <width>153</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="run_button">
+    <property name="geometry">
+     <rect>
+      <x>144</x>
+      <y>462</y>
+      <width>113</width>
+      <height>47</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Run</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="num_trials_box">
+    <property name="geometry">
+     <rect>
+      <x>24</x>
+      <y>404</y>
+      <width>48</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="value">
+     <number>1</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>78</x>
+      <y>410</y>
+      <width>51</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string># Trials</string>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="flush_box">
+    <property name="geometry">
+     <rect>
+      <x>24</x>
+      <y>366</y>
+      <width>69</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="decimals">
+     <number>1</number>
+    </property>
+    <property name="value">
+     <double>5.000000000000000</double>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>102</x>
+      <y>372</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Flush (s)</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="stim_box_label">
+    <property name="geometry">
+     <rect>
+      <x>102</x>
+      <y>340</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Stim (s)</string>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="stim_box">
+    <property name="geometry">
+     <rect>
+      <x>24</x>
+      <y>334</y>
+      <width>69</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="decimals">
+     <number>1</number>
+    </property>
+    <property name="value">
+     <double>15.000000000000000</double>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="pre_stim_box">
+    <property name="geometry">
+     <rect>
+      <x>24</x>
+      <y>302</y>
+      <width>69</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="decimals">
+     <number>1</number>
+    </property>
+    <property name="value">
+     <double>5.000000000000000</double>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>102</x>
+      <y>306</y>
+      <width>85</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Pre stim (s)</string>
+    </property>
+   </widget>
+   <widget class="QPlainTextEdit" name="experimental_dir_text">
+    <property name="geometry">
+     <rect>
+      <x>22</x>
+      <y>252</y>
+      <width>291</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
+    </property>
+    <property name="verticalScrollBarPolicy">
+     <enum>Qt::ScrollBarAlwaysOff</enum>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="choose_dir_button">
+    <property name="geometry">
+     <rect>
+      <x>318</x>
+      <y>250</y>
+      <width>24</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+    <property name="popupMode">
+     <enum>QToolButton::DelayedPopup</enum>
+    </property>
+    <property name="arrowType">
+     <enum>Qt::NoArrow</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_7">
+    <property name="geometry">
+     <rect>
+      <x>22</x>
+      <y>234</y>
+      <width>159</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Experiment directory:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>208</x>
+      <y>410</y>
+      <width>89</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Trial Period (s)</string>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="trial_period_box">
+    <property name="geometry">
+     <rect>
+      <x>134</x>
+      <y>406</y>
+      <width>69</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="decimals">
+     <number>1</number>
+    </property>
+    <property name="value">
+     <double>10.000000000000000</double>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="stim_type">
+    <property name="geometry">
+     <rect>
+      <x>196</x>
+      <y>302</y>
+      <width>109</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>Both Air</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Both Odor</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Left Odor</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Right Odor</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>314</x>
+      <y>306</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Stim Type</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>794</width>
+     <height>25</height>
+    </rect>
+   </property>
+  </widget>
+ </widget>
+ <tabstops>
+  <tabstop>start_button</tabstop>
+  <tabstop>infuse_button</tabstop>
+  <tabstop>withdraw_button</tabstop>
+  <tabstop>stop_button</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
