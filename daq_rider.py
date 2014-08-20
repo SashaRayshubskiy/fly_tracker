@@ -32,8 +32,8 @@ class DAQRider:
         
 
     def activate_3way_valves(self):
+        self.dio_chans[ 4 ].dio_write( 1 )
         self.dio_chans[ 5 ].dio_write( 1 )
-        self.dio_chans[ 6 ].dio_write( 1 )
 
     def activate_pinch_valves(self, valve_state_str):
         

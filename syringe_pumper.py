@@ -29,8 +29,8 @@ class SyringePumper:
         self.write_to_serial_sock("1 STP * 2 STP *")
 
     def set_rate(self, rate):
-        d_str = "1 RAT %2.2f MM RAT * 2 %2.2f MM *" % (rate, rate);
-        # d_str = "1 RAT %2.2f MM" % (rate)
+        #d_str = "1 RAT %2.2f MM RAT * 2 %2.2f MM *" % (rate, rate);
+        d_str = "1 RAT %2.2f MM" % (rate)
         self.write_to_serial_sock(d_str)
         #print d_str
 

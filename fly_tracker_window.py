@@ -8,7 +8,9 @@ from camera_acq import *
 from syringe_pumper import *
 from daq_rider import *
 from fly_tracker_trialer import *
+from fly_tracker_ball_tracker import *
 
+import Queue
 import threading 
 import time
 
@@ -114,7 +116,7 @@ class FlyTrackerWindow(QMainWindow):
         self.data_q_cont = Queue.Queue()
         self.data_q_trial = Queue.Queue()
         self.trial_ball_data_acq_start_event = threading.Event() # Needed to trigger start of trial
-        self.ballReader  = FlyBallReaderThread( self.data_q, self.data_q_trial, self.trial_ball_data_acq_start_event ) 
+        self.ballReader  = FlyBallReaderThread( self.data_q_cont, self.data_q_trial, self.trial_ball_data_acq_start_event ) 
         
         # Init trial handler
         self.th = FlyTrialer( self.sp, 
@@ -125,7 +127,7 @@ class FlyTrackerWindow(QMainWindow):
                               self.trial_ball_data_acq_start_event )
 
         # Init fly ball tracker
-        self.ballPlotterCont = FlyBallPlotterContinuous( self.data_q_cont, self.ui.cummulative_run.geometry(), central_widget )
+        self.ballPlotterCont = FlyBallPlotterContinuous( self.data_q_cont, self.ui.cummulative_run.geometry(), self.ui.centralwidget )
 
 
     def infuse_clicked_callback(self, val):
@@ -142,7 +144,7 @@ class FlyTrackerWindow(QMainWindow):
 
     def run_clicked_callback(self, val):        
         
-        self.th.start_trial( self.num_trials, self.pre_stim_t, 
+        self.th.start_trials( self.num_trials, self.pre_stim_t, 
                              self.stim_t, self.flush_t, 
                              self.trial_period_t, self.stim_type, 
                              self.prate, self.experimentDir )
