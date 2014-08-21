@@ -155,7 +155,7 @@ class FlyTrialer(QThread):
                         if i == (self.num_trials-1):
                             
                             print "(%f) Saving figures as .eps and .png and raw data as .mat" % (time.time()-self.start_t)
-                            datapathbase =  self.experimentDir + '/' + datetime.now().strftime(self.FORMAT)
+                            datapathbase =  self.experimentDir + '/' + datetime.now().strftime(self.FORMAT) + '_' + self.stim_type
                             self.fig1.savefig( datapathbase + '_xy_traj.eps', format='eps', dpi=1000, bbox_inches='tight')
                             self.fig1.savefig( datapathbase + '_xy_traj.png', format='png', dpi=1000, bbox_inches='tight')
 
@@ -265,3 +265,6 @@ class FlyTrialer(QThread):
         qdata = list(get_all_from_queue(self.trial_data_q))
 
         return qdata
+
+    def close(self):
+        pass

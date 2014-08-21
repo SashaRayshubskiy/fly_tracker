@@ -17,8 +17,8 @@ class DAQRider:
 
         # Create 6 channels: 4 pinch valves and 2 3-way valves
         # Chan 0: Left Odor pinch valve
-        # Chan 1: Left Air pinch valve
-        # Chan 2: Right Air pinch valve
+        # Chan 1: Right Air pinch valve
+        # Chan 2: Lefht Air pinch valve
         # Chan 3: Right Odor pinch valve
         # Chan 4: Left 3-way
         # Chan 5: Right 3-way
@@ -28,7 +28,7 @@ class DAQRider:
             chan.dio_config(IO_DIRECTION.output)
             self.dio_chans.append( chan )       
 
-        # [ LO LA RA R0 ]
+        # [ LO RA LA R0 ]
         self.pv_s = [ 0, 0, 0, 0 ]
 
         self.reset_all()
@@ -49,9 +49,9 @@ class DAQRider:
         elif valve_state_str == 'Both Odor':
             self.pv_s = [ 1, 0, 0, 1 ]
         elif valve_state_str == 'Left Odor':
-            self.pv_s = [ 1, 0, 0, 0 ]
+            self.pv_s = [ 1, 1, 0, 0 ]
         elif valve_state_str == 'Right Odor':  
-            self.pv_s = [ 0, 0, 0, 1 ]
+            self.pv_s = [ 0, 0, 1, 1 ]
         else:
             print "ERROR: valve_state_str not recognized: ", valve_state_str        
         

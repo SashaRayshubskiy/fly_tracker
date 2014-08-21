@@ -56,6 +56,9 @@ class FlyTrackerWindow(QMainWindow):
         self.trial_period_t  = self.ui.trial_period_box.value()
         self.stim_type       = self.ui.stim_type.currentText()
 
+        # Set the experiment directory
+        self.choose_dir_clicked_callback(0)
+        
         # Init device communication variables
         self.init()
 
@@ -101,6 +104,8 @@ class FlyTrackerWindow(QMainWindow):
         self.sp.close()
         self.cr.close()
         self.dr.close()
+        self.th.close()
+        self.ballPlotterCont.close()
 
     # Button callbacks
     def init(self):
@@ -132,7 +137,7 @@ class FlyTrackerWindow(QMainWindow):
             self.trial_ball_data_acq_start_event )
 
         # Init fly ball tracker
-        self.ballPlotterCont = FlyBallPlotterContinuous( self.data_q_cont, self.ui.cummulative_run.geometry(), self.ui.centralwidget )
+        self.ballPlotterCont = FlyBallPlotterContinuous( self.data_q_cont, self.ui.cummulative_run.geometry(), self.ui.centralwidget, self.experimentDir )
 
 
     def infuse_clicked_callback(self, val):

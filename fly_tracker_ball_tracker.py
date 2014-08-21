@@ -3,6 +3,8 @@ import math
 import time
 import Queue
 import threading
+import scipy.io
+from datetime import datetime
 
 from PyQt5.QtWidgets import  QWidget
 from PyQt5.QtCore import *
@@ -14,9 +16,10 @@ from matplotlib.figure import Figure
 from fly_tracker_utils import get_all_from_queue
 
 class FlyBallPlotterContinuous:
-    def __init__(self, data_q, geometry, central_widget):
+    def __init__(self, data_q, geometry, central_widget, experiment_dir):
         
         self.data_q = data_q
+        self.experiment_dir = experiment_dir
 
         # Setup plot area
         self.plot_area = QWidget( central_widget )    
@@ -47,6 +50,29 @@ class FlyBallPlotterContinuous:
         self.cur_traj_x = 0
         self.cur_traj_y = 0        
 
+        self.t_all = np.zeros(0)
+        self.dx_all = np.zeros(0)
+        self.dy_all = np.zeros(0)
+        self.FORMAT = '%Y_%m%d_%H%M%S'
+        self.RAWDATA_FLUSH_THRESHOLD = 1000000
+
+    def save_raw(self):
+        if self.experiment_dir is not None:        
+            datapathbase =  self.experiment_dir + '/' + datetime.now().strftime(self.FORMAT)
+            save_d = {}
+            save_d['t_all'] = self.t_all
+            save_d['dx_all'] = self.dx_all
+            save_d['dy_all'] = self.dy_all
+            scipy.io.savemat( datapathbase + '_raw_cummulative_xy.mat', save_d )
+
+    def close(self):
+        if self.experiment_dir is not None:
+            datapathbase =  self.experiment_dir + '/' + datetime.now().strftime(self.FORMAT)
+            self.fig.savefig( datapathbase + '_cummulative_xy.eps', format='eps', dpi=1000, bbox_inches='tight')
+            self.fig.savefig( datapathbase + '_cummulative_xy.png', format='png', dpi=1000, bbox_inches='tight')
+            
+            self.save_raw( )
+
     def updatePlot(self):
         
         # Read data from queue
@@ -54,6 +80,17 @@ class FlyBallPlotterContinuous:
 
         if len(qdata) > 0:
             t, dx, dy = zip(*qdata)
+
+            # Save the data for later output
+            np.append(self.t_all, t)
+            np.append(self.dx_all, dx)
+            np.append(self.dy_all, dy)            
+
+            if self.t_all.shape[0] > self.RAWDATA_FLUSH_THRESHOLD:
+                self.save_raw()
+                self.t_all = zeros()
+                self.dx_all = zeros()
+                self.dy_all = zeros()
 
             # Calculate trajectory
             i=0
