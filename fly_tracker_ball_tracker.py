@@ -63,6 +63,9 @@ class FlyBallPlotterContinuous:
             save_d['t_all'] = self.t_all
             save_d['dx_all'] = self.dx_all
             save_d['dy_all'] = self.dy_all
+            print "size of self.t_all: ", self.t_all.shape[0]
+            print "size of self.dx_all: ", self.dx_all.shape[0]
+            print "size of self.dy_all: ", self.dy_all.shape[0]
             scipy.io.savemat( datapathbase + '_raw_cummulative_xy.mat', save_d )
 
     def close(self):
@@ -82,9 +85,9 @@ class FlyBallPlotterContinuous:
             t, dx, dy = zip(*qdata)
 
             # Save the data for later output
-            np.append(self.t_all, t)
-            np.append(self.dx_all, dx)
-            np.append(self.dy_all, dy)            
+            self.t_all = np.append(self.t_all, t)
+            self.dx_all = np.append(self.dx_all, dx)
+            self.dy_all = np.append(self.dy_all, dy)            
 
             if self.t_all.shape[0] > self.RAWDATA_FLUSH_THRESHOLD:
                 self.save_raw()
@@ -136,8 +139,13 @@ class FlyBallReaderThread(threading.Thread):
             status, dx, dy = tuple(ord(c) for c in self.mouse.read(3))
                         
             t = time.time()
+            
+            # x+ => right, x- => left
             dx = self.to_signed(dx)
-            dy = self.to_signed(dy)
+            
+            # y+ => backward, y- => forward
+            # reverse the sign to make y+ => forward
+            dy = -1 * self.to_signed(dy)
             # print "FlyBallReaderThread: ( %f %d %d )" % ( t, dx, dy )
             self.data_q.put((t,dx,dy))
             

@@ -53,7 +53,7 @@ class AcquisitionThread(QThread):
             self._cam.new_image.release()
 
 class LiveCameraPortal:
-    def __init__(self, geometry, centralwidget ):
+    def __init__(self, geometry, centralwidget, guid ):
 
         self.imageLabel = QLabel( parent=centralwidget )
         # self.imageLabel.setBackgroundRole( QPalette.Base )
@@ -63,7 +63,6 @@ class LiveCameraPortal:
 
         self.shape = ( geometry.size().width(), geometry.size().height() )
         self.cur_img = QImage( self.shape[0], self.shape[1], QImage.Format_Indexed8 )
-
     
         """
         # We redraw our image 60 times per second; no matter what kind of camera
@@ -78,10 +77,15 @@ class LiveCameraPortal:
         self._drawn_frames = 0
         self._totframes = 0
 
+        self.guid = guid
+
     def newImage(self, img):
 
-        # Resize the incoming camera image to fit the display window
-        self.cur_img = img.scaled( self.shape[0], self.shape[1] )
+        # Resize the incoming camera image to fit the display window        
+        if self.guid == 582164335768600639:
+            self.cur_img = img.scaled( self.shape[0], self.shape[1] ).mirrored(horizontal=True, vertical=True)
+        else:
+            self.cur_img = img.scaled( self.shape[0], self.shape[1] )
 
         # Show image
         self.imageLabel.setPixmap(QPixmap.fromImage(self.cur_img))
@@ -111,7 +115,7 @@ class CameraRider:
             cur_cam = Camera( cam_lib, mode=cur_mode, guid=guid )
             self.cams.append( cur_cam )
             
-            live_portal = LiveCameraPortal( cam_geometries[i], centralwidget)
+            live_portal = LiveCameraPortal( cam_geometries[i], centralwidget, guid )
             self.liveCamPortals.append( live_portal )
 
             cur_thread = AcquisitionThread( cur_cam )
