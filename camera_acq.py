@@ -99,9 +99,16 @@ class CameraRider:
         self.acqThreads = []
         self.liveCamPortals = []
         for i, cam in enumerate(active_cameras):
-
+            
             guid = cam['guid']
-            cur_cam = Camera( cam_lib, guid=guid )
+            
+            # One of the cameras needs to have their mode set
+            if guid==582164335768600639:
+                cur_mode=(640, 480, "Y8")
+            else:
+                cur_mode=None
+
+            cur_cam = Camera( cam_lib, mode=cur_mode, guid=guid )
             self.cams.append( cur_cam )
             
             live_portal = LiveCameraPortal( cam_geometries[i], centralwidget)

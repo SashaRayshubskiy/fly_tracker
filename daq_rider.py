@@ -1,12 +1,15 @@
 # DAQ board communication
 import sys
+import time
 from pycomedi.device import Device
 from pycomedi.channel import DigitalChannel
 from pycomedi.constant import SUBDEVICE_TYPE, AREF, UNIT, IO_DIRECTION
 
 class DAQRider:
-    def __init__(self):
+    def __init__(self, start_t):
         
+        self.start_t = start_t
+
         # Connect to DAQ board
         self.daq_s = Device('/dev/comedi0')
         self.daq_s.open()
@@ -31,6 +34,10 @@ class DAQRider:
         self.reset_all()
         
 
+    def deactivate_3way_valves(self):
+        self.dio_chans[ 4 ].dio_write( 0 )
+        self.dio_chans[ 5 ].dio_write( 0 )
+
     def activate_3way_valves(self):
         self.dio_chans[ 4 ].dio_write( 1 )
         self.dio_chans[ 5 ].dio_write( 1 )
@@ -51,11 +58,17 @@ class DAQRider:
         # Send signals to daq board
         for i, s in enumerate(self.pv_s):
             self.dio_chans[ i ].dio_write( s )
+            
+        print "(%f): Activated pinch valves to: %s" % (time.time()-self.start_t, valve_state_str)
 
     def close(self):
         self.daq_s.close()
         
     def reset_all(self):
+        
+        self.deactivate_3way_valves()
+    
+        # deactivate dio channels
         self.pv_s = [ 0, 0, 0, 0 ]
         
         for i, s in enumerate(self.pv_s):

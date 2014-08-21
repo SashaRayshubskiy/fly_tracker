@@ -49,7 +49,6 @@ class FlyBallPlotterContinuous:
 
     def updatePlot(self):
         
-        # print "Got here: %f" % (time.clock())
         # Read data from queue
         qdata = list(get_all_from_queue(self.data_q))
 
@@ -86,7 +85,7 @@ class FlyBallReaderThread(threading.Thread):
         self.trial_data_q = trial_data_q
         self.trial_ball_data_acq_start_event = trial_ball_data_acq_start_event
 
-        self.mouse = file('/dev/input/mouse1')
+        self.mouse = file('/dev/input/mouse0')
 
         self.setDaemon(True)
         self.start()
@@ -96,12 +95,10 @@ class FlyBallReaderThread(threading.Thread):
 
     def run(self):        
 
-        time.clock()
-
         while True:
             status, dx, dy = tuple(ord(c) for c in self.mouse.read(3))
                         
-            t = time.clock()
+            t = time.time()
             dx = self.to_signed(dx)
             dy = self.to_signed(dy)
             # print "FlyBallReaderThread: ( %f %d %d )" % ( t, dx, dy )

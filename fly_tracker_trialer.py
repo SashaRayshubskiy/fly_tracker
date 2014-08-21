@@ -5,6 +5,9 @@ import time
 import math
 import sys
 import numpy as np
+from datetime import datetime
+
+import scipy.io
 
 from syringe_pumper import *
 from daq_rider import *
@@ -17,7 +20,7 @@ from matplotlib.figure import Figure
 from fly_tracker_utils import get_all_from_queue
 
 class FlyTrialer(QThread):
-    def __init__(self, sp, dr, geometry, central_widget, trial_data_q, trial_ball_data_acq_start_event):
+    def __init__(self, start_t, sp, dr, geometry1, geometry2, central_widget, trial_data_q, trial_ball_data_acq_start_event):
         super(FlyTrialer, self).__init__(None)
         
         self.sp = sp
@@ -36,33 +39,40 @@ class FlyTrialer(QThread):
         self.trial_period_t  = -1
         self.stim_type       = None
 
+        self.runId           = 0
+        self.trial_withdraw_t = 20.0
+
+        self.FORMAT = '%Y_%m%d_%H%M%S'
+        self.start_t = start_t
         self.stim_type_d = {}
         self.stim_type_d['Both Air'] = 'BA'
-        self.stim_type_d['Both Air'] = 'BO'
+        self.stim_type_d['Both Odor'] = 'BO'
         self.stim_type_d['Left Odor'] = 'LO'
         self.stim_type_d['Right Odor'] = 'RO'
         
 
         # Setup plot area
-        self.plot_area = QWidget( central_widget )
-        self.plot_area.setGeometry( geometry )
+        self.plot_area1 = QWidget( central_widget )
+        self.plot_area1.setGeometry( geometry1 )
 
-        w = geometry.width()
-        h = geometry.height()
         self.dpi = 80
         
-        w_inch = math.ceil(float(w) / float(self.dpi))
-        h_inch = math.ceil(float(h) / float(self.dpi))
+        self.fig1 = Figure( dpi=self.dpi, facecolor="w" )        
+        self.fig1.set_size_inches(5.0, 6.0, forward=True)
 
-        # print "trialer: w_inch, h_inch: ( %f %f )" % ( w_inch, h_inch )
-        # print "trialer: w, h: ( %f %f )" % ( w, h )
+        self.canvas1 = FigureCanvas( self.fig1 )
+        self.canvas1.setParent( self.plot_area1 )
+        self.axes1 = self.fig1.add_subplot(111)
 
-        self.fig = Figure( dpi=self.dpi, facecolor="w" )        
-        self.fig.set_size_inches(6.0, 6.0, forward=True)
+        self.plot_area2 = QWidget( central_widget )
+        self.plot_area2.setGeometry( geometry2 )
+        self.fig2 = Figure( dpi=self.dpi, facecolor="w" )        
+        self.fig2.set_size_inches(5.5, 6.0, forward=True)
 
-        self.canvas = FigureCanvas( self.fig )
-        self.canvas.setParent( self.plot_area )
-        self.axes = self.fig.add_subplot(111)
+        self.canvas2 = FigureCanvas( self.fig2 )
+        self.canvas2.setParent( self.plot_area2 )
+        self.axes_xt = self.fig2.add_subplot(211)
+        self.axes_yt = self.fig2.add_subplot(212)
         
         self.start()                    
 
@@ -88,6 +98,14 @@ class FlyTrialer(QThread):
                 QThread.yieldCurrentThread()
             else:
                 trial_results = []
+                self.axes1.cla()
+                self.axes_xt.cla()
+                self.axes_yt.cla()
+                self.fig1.canvas.draw()
+                self.fig2.canvas.draw()
+
+                run_data = []
+                
                 for i in range(self.num_trials):
                                         
                     trial_data = self.run_trial( i )
@@ -95,28 +113,75 @@ class FlyTrialer(QThread):
                     
                     if len(trial_data) > 0:
                         t, dx, dy = zip(*trial_data)
-                    
+                        
+                        trial_data = {}
+                        trial_data['t'] = t
+                        trial_data['dx'] = dx
+                        trial_data['dy'] = dy
+                        run_data.append( trial_data )                    
+
                         traj_x, traj_y = self.calc_trial_trajectory( dx, dy )
 
                         # plot data
                         label_str = 'Trial: %d %s' % (i,self.stim_type_d[self.stim_type]) 
-                        self.axes.hold(True)
-                        self.axes.plot( traj_x, traj_y, label=label_str)
-                        self.axes.legend()
-                        self.fig.canvas.draw()
-                    
-                    if self.num_trials > 1:
+                        self.axes1.hold(True)
+                        self.axes1.plot( traj_x, traj_y, label=label_str)
+                        self.axes1.set_xlabel('x distance (au)')
+                        self.axes1.set_ylabel('y distance (au)')
+                        lh = self.axes1.legend()
+                        lh.draggable(True)
+
+                        self.fig1.canvas.draw()
+                        
+                        # Plot x and y vs time
+                        t_plot = np.asarray(t)-t[0]
+                        self.axes_xt.hold(True)
+                        self.axes_xt.plot(t_plot, traj_x, label=label_str)
+                        self.axes_xt.set_xlabel('Time (s)')
+                        self.axes_xt.set_ylabel('x distance (au)')
+                        lh = self.axes_xt.legend()
+                        lh.draggable(True)
+
+                        self.axes_yt.hold(True)
+                        self.axes_yt.plot(t_plot, traj_y, label=label_str)
+                        self.axes_yt.set_xlabel('Time (s)')
+                        self.axes_yt.set_ylabel('y distance (au)')
+                        lh = self.axes_yt.legend()                        
+                        lh.draggable(True)
+
+                        self.fig2.canvas.draw()
+
+                        # save data
+                        if i == (self.num_trials-1):
+                            
+                            print "(%f) Saving figures as .eps and .png and raw data as .mat" % (time.time()-self.start_t)
+                            datapathbase =  self.experimentDir + '/' + datetime.now().strftime(self.FORMAT)
+                            self.fig1.savefig( datapathbase + '_xy_traj.eps', format='eps', dpi=1000, bbox_inches='tight')
+                            self.fig1.savefig( datapathbase + '_xy_traj.png', format='png', dpi=1000, bbox_inches='tight')
+
+                            self.fig2.savefig( datapathbase + '_xy_t.eps', format='eps', dpi=1000, bbox_inches='tight')
+                            self.fig2.savefig( datapathbase + '_xy_t.png', format='png', dpi=1000, bbox_inches='tight')
+
+                            # Save each trial as a separate .mat file
+                            for i, td in enumerate( run_data ):
+                                trial_datapath = datapathbase + "_raw_trial_" + str(i)
+                                scipy.io.savemat( trial_datapath + '.mat', td)                            
+                        
+                    if self.num_trials > 1 and i != self.num_trials-1:
                         # Pause
-                        print "Finished trial: ", i
+                        print "(%f) Finished trial: %d" % (time.time()-self.start_t, i)
                         self.sleep_with_status_update(self.trial_period_t, "Inter trial wait" )
+
+                    print "(%f) Trial runs complete" % (time.time()-self.start_t)
                     self.trial_start_event.clear()
-    
+                    self.runId = self.runId + 1
+
     def sleep_with_status_update(self, sleep_t, name):
         
         if not sleep_t.is_integer():
             raise Exception( "ERROR: sleep time is not an integer: %f" % ( sleep_t ))
 
-        print "(%s): About to sleep for %f sec" % (name, float(sleep_t))
+        print "(%f::%s): About to sleep for %f sec" % (time.time()-self.start_t, name, float(sleep_t))
         for st in range(int(sleep_t)):
             time.sleep(1)
             sys.stdout.write('.')
@@ -125,6 +190,10 @@ class FlyTrialer(QThread):
 
     def start_trials(self, num_trials, pre_stim_t, stim_t, flush_t, trial_period_t, stim_type, prate, experiment_dir):
         
+        if experiment_dir == None:
+            print "ERROR: Please set the experiment directory path"
+            return
+
         self.experimentDir   = experiment_dir
         self.prate           = prate
         self.num_trials      = num_trials
@@ -147,11 +216,12 @@ class FlyTrialer(QThread):
         self.sp.withdraw()
 
         self.sp.start()
-        self.sleep_with_status_update(17.0, "Syringe pump withdraw before stim")
+        self.sleep_with_status_update(self.trial_withdraw_t, "Syringe pump withdraw before stim")
         self.sp.stop()
 
         # Prepare syringe pumps for stim
         self.sp.infuse()
+        print "Infuse prate: ", self.prate
         self.sp.set_rate( self.prate )
 
         # Prepare valves for stim
@@ -170,21 +240,18 @@ class FlyTrialer(QThread):
         self.sleep_with_status_update(self.pre_stim_t, "Data Acq::Baseline")
         
         # Start stim
+        print "(%f): About to start stim for %f seconds" % (time.time()-self.start_t, self.stim_t)
         self.sp.start()
         time.sleep(self.stim_t)
         self.sp.stop()
 
-        ## WARNING: This is a temp workaround some race condition in 
-        # communicating with the daq board
-        time.sleep(1.0)
-        
         # Prepare syringe pumps for flush 
         self.sp.set_rate( 10.0 )
 
         # Set pinch valves for 'Both Air'
         self.dr.activate_pinch_valves('Both Air')
 
-        # Start stim
+        # Start flush
         self.sp.start()
         self.sleep_with_status_update(self.flush_t, "Flush")
         self.sp.stop()

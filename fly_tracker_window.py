@@ -18,6 +18,8 @@ class FlyTrackerWindow(QMainWindow):
     def __init__(self):
         super(FlyTrackerWindow, self).__init__()
 
+        self.start_t = time.time()
+
         # Set up the user interface from Designer.
         self.ui = Ui_FlyTracker()
         self.ui.setupUi(self)
@@ -89,10 +91,11 @@ class FlyTrackerWindow(QMainWindow):
         self.num_trials = val
 
     def choose_dir_clicked_callback(self, val):
+                
         self.experimentDir = QFileDialog.getExistingDirectory(self,
-                                                              "Choose an experiment directory", "/home/sasha")
+                                                              "Choose an experiment directory", "/home/sasha/fly_trackball_data/")
 
-        self.ui.experimental_dir_text.setPlainText( self.experimentDir )
+        self.ui.experimental_dir_text.setPlainText( self.experimentDir )    
 
     def finalize(self):
         self.sp.close()
@@ -103,14 +106,14 @@ class FlyTrackerWindow(QMainWindow):
     def init(self):
 
         # Init syringe pump
-        self.sp = SyringePumper(self.diameter, self.prate)
+        self.sp = SyringePumper(self.start_t, self.diameter, self.prate)
 
         # Connect to cameras
         camera_geometries = [ self.ui.camera1.geometry(), self.ui.camera2.geometry() ]
         self.cr = CameraRider( camera_geometries, self.ui.centralwidget )
 
         # Init daq board connection for valve control
-        self.dr = DAQRider()
+        self.dr = DAQRider(self.start_t)
 
         # Init the fly ball reader, for contineous and trial acq
         self.data_q_cont = Queue.Queue()
@@ -119,12 +122,14 @@ class FlyTrackerWindow(QMainWindow):
         self.ballReader  = FlyBallReaderThread( self.data_q_cont, self.data_q_trial, self.trial_ball_data_acq_start_event ) 
         
         # Init trial handler
-        self.th = FlyTrialer( self.sp, 
-                              self.dr,
-                              self.ui.trial_run.geometry(), 
-                              self.ui.centralwidget, 
-                              self.data_q_trial, 
-                              self.trial_ball_data_acq_start_event )
+        self.th = FlyTrialer( self.start_t,
+            self.sp, 
+            self.dr,
+            self.ui.trial_run1.geometry(), 
+            self.ui.trial_run2.geometry(), 
+            self.ui.centralwidget, 
+            self.data_q_trial, 
+            self.trial_ball_data_acq_start_event )
 
         # Init fly ball tracker
         self.ballPlotterCont = FlyBallPlotterContinuous( self.data_q_cont, self.ui.cummulative_run.geometry(), self.ui.centralwidget )
