@@ -91,9 +91,9 @@ class FlyBallPlotterContinuous:
 
             if self.t_all.shape[0] > self.RAWDATA_FLUSH_THRESHOLD:
                 self.save_raw()
-                self.t_all = zeros()
-                self.dx_all = zeros()
-                self.dy_all = zeros()
+                self.t_all = np.zeros()
+                self.dx_all = np.zeros()
+                self.dy_all = np.zeros()
 
             # Calculate trajectory
             i=0
