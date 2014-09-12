@@ -44,13 +44,13 @@ class DAQRider:
 
     def activate_pinch_valves(self, valve_state_str):
         
-        if valve_state_str == 'Both Air': 
+        if valve_state_str == 'Both_Air': 
             self.pv_s = [ 0, 1, 1, 0 ]
-        elif valve_state_str == 'Both Odor':
+        elif valve_state_str == 'Both_Odor':
             self.pv_s = [ 1, 0, 0, 1 ]
-        elif valve_state_str == 'Left Odor':
+        elif valve_state_str == 'Right_Odor':
             self.pv_s = [ 1, 1, 0, 0 ]
-        elif valve_state_str == 'Right Odor':  
+        elif valve_state_str == 'Left_Odor':  
             self.pv_s = [ 0, 0, 1, 1 ]
         else:
             print "ERROR: valve_state_str not recognized: ", valve_state_str        

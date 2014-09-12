@@ -489,29 +489,34 @@
     <property name="geometry">
      <rect>
       <x>232</x>
-      <y>444</y>
+      <y>442</y>
       <width>108</width>
       <height>27</height>
      </rect>
     </property>
     <item>
      <property name="text">
-      <string>Both Air</string>
+      <string>Random</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Both Odor</string>
+      <string>Both_Air</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Left Odor</string>
+      <string>Both_Odor</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>Right Odor</string>
+      <string>Left_Odor</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Right_Odor</string>
      </property>
     </item>
    </widget>

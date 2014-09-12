@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import  QWidget
 from PyQt5.QtCore import *
 
+import random
 import time
 import math
 import sys
@@ -37,7 +38,7 @@ class FlyTrialer(QThread):
         self.stim_t          = -1
         self.flush_t         = -1
         self.trial_period_t  = -1
-        self.stim_type       = None
+        self.stim_type_selected       = None
 
         self.runId           = 0
         self.trial_withdraw_t = 20.0
@@ -45,10 +46,12 @@ class FlyTrialer(QThread):
         self.FORMAT = '%Y_%m%d_%H%M%S'
         self.start_t = start_t
         self.stim_type_d = {}
-        self.stim_type_d['Both Air'] = 'BA'
-        self.stim_type_d['Both Odor'] = 'BO'
-        self.stim_type_d['Left Odor'] = 'LO'
-        self.stim_type_d['Right Odor'] = 'RO'
+        self.stim_type_d['Both_Air'] = 'BA'
+        self.stim_type_d['Both_Odor'] = 'BO'
+        self.stim_type_d['Left_Odor'] = 'LO'
+        self.stim_type_d['Right_Odor'] = 'RO'
+
+        self.stim_type_for_random = [ 'Both_Air', 'Both_Odor', 'Left_Odor', 'Right_Odor' ]
         
 
         # Setup plot area
@@ -104,11 +107,26 @@ class FlyTrialer(QThread):
                 self.fig1.canvas.draw()
                 self.fig2.canvas.draw()
 
-                run_data = []
+                run_data = []                
+                stim_type = None
                 
+                run_stim_types = []
+
                 for i in range(self.num_trials):
                                         
-                    trial_data = self.run_trial( i )
+                    # Select a random stim type
+                    if self.stim_type_selected == 'Random':
+                        
+                        rand_idx  = random.randrange( len(self.stim_type_for_random) )
+                        stim_type = self.stim_type_for_random[ rand_idx ] 
+
+                        # stim_type = random.choice(self.stim_type_d.keys())
+                    else:
+                        stim_type = self.stim_type_selected
+
+                    run_stim_types.append(stim_type)
+
+                    trial_data = self.run_trial( i, stim_type )
                     trial_results.append( trial_data )
                     
                     if len(trial_data) > 0:
@@ -123,30 +141,39 @@ class FlyTrialer(QThread):
                         traj_x, traj_y = self.calc_trial_trajectory( dx, dy )
 
                         # plot data
-                        label_str = 'Trial: %d %s' % (i,self.stim_type_d[self.stim_type]) 
+                        label_str = 'Trial: %d %s' % (i,self.stim_type_d[stim_type]) 
                         self.axes1.hold(True)
                         self.axes1.plot( traj_x, traj_y, label=label_str)
+                        
+                        # Find the x,y value corresponding to the start of stim
+                        # label this value with an 'X'
+                        t_plot = np.asarray(t)-t[0]
+                                                
+                        t_plot_stim = np.where( t_plot > self.stim_t )
+                        t_idx = t_plot_stim[0]
+                                                
+                        self.axes1.plot( traj_x[t_idx], traj_y[t_idx], 'x')
+
                         self.axes1.set_xlabel('x distance (au)')
                         self.axes1.set_ylabel('y distance (au)')
-                        lh = self.axes1.legend()
+                        lh = self.axes1.legend(prop={'size':6})
                         lh.draggable(True)
 
                         self.fig1.canvas.draw()
                         
                         # Plot x and y vs time
-                        t_plot = np.asarray(t)-t[0]
                         self.axes_xt.hold(True)
                         self.axes_xt.plot(t_plot, traj_x, label=label_str)
                         self.axes_xt.set_xlabel('Time (s)')
                         self.axes_xt.set_ylabel('x distance (au)')
-                        lh = self.axes_xt.legend()
+                        lh = self.axes_xt.legend(prop={'size':6})
                         lh.draggable(True)
 
                         self.axes_yt.hold(True)
                         self.axes_yt.plot(t_plot, traj_y, label=label_str)
                         self.axes_yt.set_xlabel('Time (s)')
                         self.axes_yt.set_ylabel('y distance (au)')
-                        lh = self.axes_yt.legend()                        
+                        lh = self.axes_yt.legend(prop={'size':6})         
                         lh.draggable(True)
 
                         self.fig2.canvas.draw()
@@ -155,7 +182,7 @@ class FlyTrialer(QThread):
                         if i == (self.num_trials-1):
                             
                             print "(%f) Saving figures as .eps and .png and raw data as .mat" % (time.time()-self.start_t)
-                            datapathbase =  self.experimentDir + '/' + datetime.now().strftime(self.FORMAT) + '_' + self.stim_type
+                            datapathbase =  self.experimentDir + '/' + datetime.now().strftime(self.FORMAT) 
                             self.fig1.savefig( datapathbase + '_xy_traj.eps', format='eps', dpi=1000, bbox_inches='tight')
                             self.fig1.savefig( datapathbase + '_xy_traj.png', format='png', dpi=1000, bbox_inches='tight')
 
@@ -164,8 +191,10 @@ class FlyTrialer(QThread):
 
                             # Save each trial as a separate .mat file
                             for i, td in enumerate( run_data ):
-                                trial_datapath = datapathbase + "_raw_trial_" + str(i)
-                                scipy.io.savemat( trial_datapath + '.mat', td)                            
+                                stim_type = run_stim_types[ i ]
+                                cur_datapath = datapathbase + '_' + stim_type
+                                trial_datapath = cur_datapath + "_raw_trial_" + str( i )
+                                scipy.io.savemat( trial_datapath + '.mat', td )
                         
                     if self.num_trials > 1 and i != self.num_trials-1:
                         # Pause
@@ -201,12 +230,12 @@ class FlyTrialer(QThread):
         self.stim_t          = stim_t
         self.flush_t         = flush_t
         self.trial_period_t  = trial_period_t
-        self.stim_type       = stim_type
+        self.stim_type_selected = stim_type
     
         self.trial_start_event.set() 
         
             
-    def run_trial(self, trial_ord):
+    def run_trial(self, trial_ord, stim_type):
         
         # Reset all daq board channels
         self.dr.reset_all()
@@ -225,7 +254,7 @@ class FlyTrialer(QThread):
         self.sp.set_rate( self.prate )
 
         # Prepare valves for stim
-        self.dr.activate_pinch_valves( self.stim_type )
+        self.dr.activate_pinch_valves( stim_type )
         self.dr.activate_3way_valves()
         
         # Pause for 10 seconds before starting stim, as per Gaudry et al.

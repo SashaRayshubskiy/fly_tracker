@@ -115,7 +115,7 @@ class FlyTrackerWindow(QMainWindow):
 
         # Connect to cameras
         camera_geometries = [ self.ui.camera1.geometry(), self.ui.camera2.geometry() ]
-        self.cr = CameraRider( camera_geometries, self.ui.centralwidget )
+        self.cr = CameraRider( camera_geometries, self.ui.centralwidget, self.experimentDir )
 
         # Init daq board connection for valve control
         self.dr = DAQRider(self.start_t)

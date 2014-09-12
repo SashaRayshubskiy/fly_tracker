@@ -54,27 +54,27 @@ class FlyBallPlotterContinuous:
         self.dx_all = np.zeros(0)
         self.dy_all = np.zeros(0)
         self.FORMAT = '%Y_%m%d_%H%M%S'
-        self.RAWDATA_FLUSH_THRESHOLD = 1000000
+        self.RAWDATA_FLUSH_THRESHOLD = 100000000
 
     def save_raw(self):
         if self.experiment_dir is not None:        
-            datapathbase =  self.experiment_dir + '/' + datetime.now().strftime(self.FORMAT)
+            datapathbase =  self.experiment_dir + '/' + datetime.now().strftime( self.FORMAT )
             save_d = {}
             save_d['t_all'] = self.t_all
             save_d['dx_all'] = self.dx_all
             save_d['dy_all'] = self.dy_all
-            print "size of self.t_all: ", self.t_all.shape[0]
-            print "size of self.dx_all: ", self.dx_all.shape[0]
-            print "size of self.dy_all: ", self.dy_all.shape[0]
+            # print "size of self.t_all: ", self.t_all.shape[0]
+            # print "size of self.dx_all: ", self.dx_all.shape[0]
+            # print "size of self.dy_all: ", self.dy_all.shape[0]
             scipy.io.savemat( datapathbase + '_raw_cummulative_xy.mat', save_d )
 
     def close(self):
         if self.experiment_dir is not None:
-            datapathbase =  self.experiment_dir + '/' + datetime.now().strftime(self.FORMAT)
+            datapathbase =  self.experiment_dir + '/' + datetime.now().strftime( self.FORMAT )
             self.fig.savefig( datapathbase + '_cummulative_xy.eps', format='eps', dpi=1000, bbox_inches='tight')
             self.fig.savefig( datapathbase + '_cummulative_xy.png', format='png', dpi=1000, bbox_inches='tight')
             
-            self.save_raw( )
+            self.save_raw()
 
     def updatePlot(self):
         

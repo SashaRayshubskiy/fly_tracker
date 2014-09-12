@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'fly_tracker_gui.ui'
 #
-# Created: Thu Aug 21 11:28:12 2014
+# Created: Thu Sep 11 18:31:11 2014
 #      by: PyQt5 UI code generator 5.3.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -163,8 +163,9 @@ class Ui_FlyTracker(object):
         self.trial_period_box.setProperty("value", 10.0)
         self.trial_period_box.setObjectName("trial_period_box")
         self.stim_type = QtWidgets.QComboBox(self.centralwidget)
-        self.stim_type.setGeometry(QtCore.QRect(232, 444, 108, 27))
+        self.stim_type.setGeometry(QtCore.QRect(232, 442, 108, 27))
         self.stim_type.setObjectName("stim_type")
+        self.stim_type.addItem("")
         self.stim_type.addItem("")
         self.stim_type.addItem("")
         self.stim_type.addItem("")
@@ -217,9 +218,10 @@ class Ui_FlyTracker(object):
         self.choose_dir_button.setText(_translate("FlyTracker", "..."))
         self.label_7.setText(_translate("FlyTracker", "Experiment directory:"))
         self.label_8.setText(_translate("FlyTracker", "Trial Period (s)"))
-        self.stim_type.setItemText(0, _translate("FlyTracker", "Both Air"))
-        self.stim_type.setItemText(1, _translate("FlyTracker", "Both Odor"))
-        self.stim_type.setItemText(2, _translate("FlyTracker", "Left Odor"))
-        self.stim_type.setItemText(3, _translate("FlyTracker", "Right Odor"))
+        self.stim_type.setItemText(0, _translate("FlyTracker", "Random"))
+        self.stim_type.setItemText(1, _translate("FlyTracker", "Both_Air"))
+        self.stim_type.setItemText(2, _translate("FlyTracker", "Both_Odor"))
+        self.stim_type.setItemText(3, _translate("FlyTracker", "Left_Odor"))
+        self.stim_type.setItemText(4, _translate("FlyTracker", "Right_Odor"))
         self.label_5.setText(_translate("FlyTracker", "Stim Type"))
 

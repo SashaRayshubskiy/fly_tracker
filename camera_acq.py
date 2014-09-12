@@ -9,6 +9,10 @@ from pydc1394 import DC1394Library, Camera
 
 from qimage2ndarray import *
 
+import cv2
+from datetime import datetime
+import numpy as np
+
 class AcquisitionThread(QThread):
     _new_image_signal = pyqtSignal('QImage')
 
@@ -53,7 +57,7 @@ class AcquisitionThread(QThread):
             self._cam.new_image.release()
 
 class LiveCameraPortal:
-    def __init__(self, geometry, centralwidget, guid ):
+    def __init__(self, geometry, centralwidget, guid, location, experiment_dir ):
 
         self.imageLabel = QLabel( parent=centralwidget )
         # self.imageLabel.setBackgroundRole( QPalette.Base )
@@ -78,23 +82,51 @@ class LiveCameraPortal:
         self._totframes = 0
 
         self.guid = guid
+        self.location = location
+
+        self.FORMAT = '%Y_%m%d_%H%M%S'
+        
+        self.img_cnt = 0
+        self.IMG_SAVE_MOD_CONST = 100
+        self.video_out = None
+        self.experiment_dir = experiment_dir
 
     def newImage(self, img):
 
         # Resize the incoming camera image to fit the display window        
-        if self.guid == 582164335768600639:
+        if self.location == 'front':
             self.cur_img = img.scaled( self.shape[0], self.shape[1] ).mirrored(horizontal=True, vertical=True)
         else:
             self.cur_img = img.scaled( self.shape[0], self.shape[1] )
+            
+            """
+            # save movie frame 
+            #self.pipe.communicate(input=img.bits())
+            if self.video_out == None or ((self.img_cnt % self.IMG_SAVE_MOD_CONST) == 0):
+
+                if self.video_out != None:
+                    print 'Writing video to disk'
+                    self.video_out.release()
+
+                avi_file = self.experiment_dir + '/' + datetime.now().strftime(self.FORMAT) + '_side_cam.avi'
+                fourcc = cv2.cv.CV_FOURCC(*'XVID')
+                self.video_out = cv2.VideoWriter(avi_file,fourcc, 20.0, (img.height(),img.width()))
+                
+            np_img = qimage2numpy( img )
+            # print 'np_img.shape', np_img.shape
+            self.video_out.write( np_img )
+            self.img_cnt = self.img_cnt + 1
+            """
 
         # Show image
-        self.imageLabel.setPixmap(QPixmap.fromImage(self.cur_img))
+        self.imageLabel.setPixmap(QPixmap.fromImage(self.cur_img))            
+
 
     def close(self):
         pass
 
 class CameraRider:
-    def __init__(self, cam_geometries, centralwidget):
+    def __init__(self, cam_geometries, centralwidget, experiment_dir):
         cam_lib = DC1394Library()
         
         active_cameras = cam_lib.enumerate_cameras()
@@ -102,6 +134,7 @@ class CameraRider:
         self.cams = []
         self.acqThreads = []
         self.liveCamPortals = []
+        self.camera_location = None
         for i, cam in enumerate(active_cameras):
             
             guid = cam['guid']
@@ -109,13 +142,15 @@ class CameraRider:
             # One of the cameras needs to have their mode set
             if guid==582164335768600639:
                 cur_mode=(640, 480, "Y8")
+                self.camera_location = 'front'
             else:
+                self.camera_location = 'side'
                 cur_mode=None
 
             cur_cam = Camera( cam_lib, mode=cur_mode, guid=guid )
             self.cams.append( cur_cam )
             
-            live_portal = LiveCameraPortal( cam_geometries[i], centralwidget, guid )
+            live_portal = LiveCameraPortal( cam_geometries[i], centralwidget, guid, self.camera_location, experiment_dir )
             self.liveCamPortals.append( live_portal )
 
             cur_thread = AcquisitionThread( cur_cam )
