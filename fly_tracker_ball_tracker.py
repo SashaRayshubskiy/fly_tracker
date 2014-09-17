@@ -16,16 +16,23 @@ from matplotlib.figure import Figure
 from fly_tracker_utils import get_all_from_queue
 
 class FlyBallPlotterContinuous:
-    def __init__(self, data_q, geometry, central_widget, experiment_dir):
+    def __init__(self, 
+                 data_q, 
+                 geometry_cummulative, 
+                 geometry_polar_plot, 
+                 central_widget, 
+                 experiment_dir ):
         
         self.data_q = data_q
         self.experiment_dir = experiment_dir
-
-        # Setup plot area
-        self.plot_area = QWidget( central_widget )    
-        self.plot_area.setGeometry( geometry )
-        w = geometry.width()
-        h = geometry.height()
+        
+        ##################################
+        # Setup plot area for cummulative
+        ##################################
+        self.plot_area_polar = QWidget( central_widget )    
+        self.plot_area_polar.setGeometry( geometry_polar_plot_1 )
+        w = geometry_polar_plot.width()
+        h = geometry_polar_plot.height()
         self.dpi = 80
         
         w_inch = math.ceil(float(w) / float(self.dpi)) 
@@ -38,8 +45,38 @@ class FlyBallPlotterContinuous:
         self.canvas = FigureCanvas( self.fig )
         self.canvas.setParent( self.plot_area )
 
-        self.axes = self.fig.add_subplot(111)
+        self.axes = self.fig.add_subplot( 111 )
+        ##################################
+
+
                 
+        ##################################
+        # Setup plot area for polar plot 1
+        ##################################
+        matplotlib.rc('grid', color='#316931', linewidth=1, linestyle='-')
+        matplotlib.rc('xtick', labelsize=15)
+        matplotlib.rc('ytick', labelsize=15)
+
+        self.plot_area_polar = QWidget( central_widget )    
+        self.plot_area_polar.setGeometry( geometry_polar_plot )
+        w = geometry_polar_plot.width()
+        h = geometry_polar_plot.height()
+        self.dpi = 80
+        
+        w_inch = math.ceil(float(w) / float(self.dpi)) 
+        h_inch = math.ceil(float(h) / float(self.dpi))
+
+        # print "ball_tracker: w_inch, h_inch: ( %f %f )" % ( w_inch, h_inch )
+        # print "ball_tracker: w, h: ( %f %f )" % ( w, h )
+
+        self.fig_polar = Figure( figsize=(2, 4), dpi=self.dpi, facecolor="w" )        
+        self.canvas_polar = FigureCanvas( self.fig_polar )
+        self.canvas.setParent( self.plot_area_polar )
+
+        self.polar_axes_1 = self.fig.add_subplot( 211, polar=True, axisbg='#d5de9c')               
+        self.polar_axes_2 = self.fig.add_subplot( 212, polar=True, axisbg='#d5de9c')
+        ##################################
+
         # Setup update timer
         self.update_freq = 20
         self.timer = QTimer()
@@ -55,6 +92,19 @@ class FlyBallPlotterContinuous:
         self.dy_all = np.zeros(0)
         self.FORMAT = '%Y_%m%d_%H%M%S'
         self.RAWDATA_FLUSH_THRESHOLD = 100000000
+
+        self.dir_cumm_x = 0.0
+        self.dir_cumm_y = 0.0        
+        self.vel_cumm_sum_x = 0.0
+        self.vel_cumm_sum_y = 0.0
+        self.vel_cumm_count = 0
+
+        self.MOVING_WINDOW_SIZE = 60 # Seconds
+        self.dir_win_x = 0.0
+        self.dir_win_y = 0.0        
+        self.vel_win_sum_x = 0.0
+        self.vel_win_sum_y = 0.0
+        self.vel_win_count = 0
 
     def save_raw(self):
         if self.experiment_dir is not None:        
@@ -116,6 +166,32 @@ class FlyBallPlotterContinuous:
             # self.axes.plot( dx, dy, color='b' )
             self.axes.plot(traj_x,traj_y, color='b')
             self.fig.canvas.draw()
+
+            # Calculate velocity and direction in a moving window
+            # Show result in polar plot
+            self.dir_cumm_x = self.dir_cumm_x + np.sum(dx)
+            self.dir_cumm_y = self.dir_cumm_y + np.sum(dy)
+            angle_rad = math.tan( self.dir_cumm_x / self.dir_cumm_y )
+            
+            t_from_zero = t - t[ 0 ]
+            t_from_zero_diff = np.diff( t_from_zero )
+            self.vel_cumm_sum_x = self.vel_cumm_sum_x + np.sum( dx[1:] ./ t_from_zero_diff )
+            self.vel_cumm_sum_y = self.vel_cumm_sum_y + np.sum( dy[1:] ./ t_from_zero_diff )
+            self.vel_cumm_count = self.vel_cumm_count + (len(t)-1)
+
+            avg_vel_x = self.vel_cumm_sum_x ./ self.vel_cumm_count;
+            avg_vel_y = self.vel_cumm_sum_y ./ self.vel_cumm_count;
+            dir_vel = np.sqrt( avg_vel_x^2 + avg_vel_y^2 )
+            
+            self.polar_axes_1.set_title('Cummulative speed and direction')
+            self.polar_axes_1.arrow(angle_rad, 0, 0, dir_vel, alpha = 0.5, width = 0.015,
+                                    edgecolor = 'black', facecolor = 'green', lw = 2, zorder = 5)
+
+            self.polar_axes_2.set_title('Speed and direction for the last %d seconds' % (self.MOVING_WINDOW_SIZE))
+            self.polar_axes_2.arrow(angle_rad, 0, 0, dir_vel, alpha = 0.5, width = 0.015,
+                                    edgecolor = 'black', facecolor = 'green', lw = 2, zorder = 5)
+
+            self.fig_polar.canvas.draw()
 
 class FlyBallReaderThread(threading.Thread):
     def __init__(self, data_q, trial_data_q, trial_ball_data_acq_start_event):

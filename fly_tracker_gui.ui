@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1343</width>
+    <width>1344</width>
     <height>886</height>
    </rect>
   </property>
@@ -23,8 +23,8 @@
    <widget class="QPushButton" name="start_button">
     <property name="geometry">
      <rect>
-      <x>8</x>
-      <y>96</y>
+      <x>16</x>
+      <y>14</y>
       <width>111</width>
       <height>41</height>
      </rect>
@@ -36,8 +36,8 @@
    <widget class="QPushButton" name="stop_button">
     <property name="geometry">
      <rect>
-      <x>8</x>
-      <y>154</y>
+      <x>16</x>
+      <y>64</y>
       <width>111</width>
       <height>41</height>
      </rect>
@@ -52,8 +52,8 @@
    <widget class="QPushButton" name="infuse_button">
     <property name="geometry">
      <rect>
-      <x>136</x>
-      <y>166</y>
+      <x>10</x>
+      <y>208</y>
       <width>99</width>
       <height>27</height>
      </rect>
@@ -65,8 +65,8 @@
    <widget class="QPushButton" name="withdraw_button">
     <property name="geometry">
      <rect>
-      <x>136</x>
-      <y>196</y>
+      <x>10</x>
+      <y>246</y>
       <width>99</width>
       <height>27</height>
      </rect>
@@ -78,8 +78,8 @@
    <widget class="QFrame" name="camera2">
     <property name="geometry">
      <rect>
-      <x>632</x>
-      <y>16</y>
+      <x>484</x>
+      <y>24</y>
       <width>300</width>
       <height>300</height>
      </rect>
@@ -94,8 +94,8 @@
    <widget class="QFrame" name="camera1">
     <property name="geometry">
      <rect>
-      <x>322</x>
-      <y>16</y>
+      <x>174</x>
+      <y>24</y>
       <width>300</width>
       <height>300</height>
      </rect>
@@ -110,8 +110,8 @@
    <widget class="QDoubleSpinBox" name="rate_box">
     <property name="geometry">
      <rect>
-      <x>128</x>
-      <y>82</y>
+      <x>6</x>
+      <y>122</y>
       <width>51</width>
       <height>25</height>
      </rect>
@@ -143,8 +143,8 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>186</x>
-      <y>86</y>
+      <x>64</x>
+      <y>126</y>
       <width>93</width>
       <height>17</height>
      </rect>
@@ -161,8 +161,8 @@
    <widget class="QDoubleSpinBox" name="diameter_box">
     <property name="geometry">
      <rect>
-      <x>128</x>
-      <y>116</y>
+      <x>6</x>
+      <y>156</y>
       <width>51</width>
       <height>27</height>
      </rect>
@@ -182,8 +182,8 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>184</x>
-      <y>122</y>
+      <x>62</x>
+      <y>162</y>
       <width>97</width>
       <height>17</height>
      </rect>
@@ -201,7 +201,7 @@
     <property name="geometry">
      <rect>
       <x>-6</x>
-      <y>340</y>
+      <y>350</y>
       <width>1335</width>
       <height>16</height>
      </rect>
@@ -213,8 +213,8 @@
    <widget class="Line" name="line_2">
     <property name="geometry">
      <rect>
-      <x>288</x>
-      <y>8</y>
+      <x>156</x>
+      <y>12</y>
       <width>16</width>
       <height>329</height>
      </rect>
@@ -242,8 +242,8 @@
    <widget class="QFrame" name="cummulative_run">
     <property name="geometry">
      <rect>
-      <x>1002</x>
-      <y>16</y>
+      <x>810</x>
+      <y>22</y>
       <width>317</width>
       <height>319</height>
      </rect>
@@ -558,13 +558,42 @@
     <property name="geometry">
      <rect>
       <x>454</x>
-      <y>356</y>
+      <y>370</y>
       <width>16</width>
-      <height>501</height>
+      <height>487</height>
      </rect>
     </property>
     <property name="orientation">
      <enum>Qt::Vertical</enum>
+    </property>
+   </widget>
+   <widget class="Line" name="line_4">
+    <property name="geometry">
+     <rect>
+      <x>792</x>
+      <y>10</y>
+      <width>16</width>
+      <height>329</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Vertical</enum>
+    </property>
+   </widget>
+   <widget class="QFrame" name="polar_plot_1">
+    <property name="geometry">
+     <rect>
+      <x>1146</x>
+      <y>24</y>
+      <width>185</width>
+      <height>317</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
     </property>
    </widget>
   </widget>
@@ -574,7 +603,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1343</width>
+     <width>1344</width>
      <height>25</height>
     </rect>
    </property>

@@ -31,8 +31,7 @@ class DAQRider:
         # [ LO RA LA R0 ]
         self.pv_s = [ 0, 0, 0, 0 ]
 
-        self.reset_all()
-        
+        self.reset_all()        
 
     def deactivate_3way_valves(self):
         self.dio_chans[ 4 ].dio_write( 0 )
