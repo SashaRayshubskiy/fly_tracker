@@ -21,7 +21,9 @@ from matplotlib.figure import Figure
 from fly_tracker_utils import get_all_from_queue
 
 class FlyTrialer(QThread):
-    def __init__(self, start_t, sp, dr, geometry1, geometry2, central_widget, trial_data_q, trial_ball_data_acq_start_event):
+    def __init__(self, start_t, sp, dr, geometry1, geometry2, central_widget, 
+                 trial_data_q, 
+                 trial_ball_data_acq_start_event):
         super(FlyTrialer, self).__init__(None)
         
         self.sp = sp
@@ -126,7 +128,7 @@ class FlyTrialer(QThread):
 
                     run_stim_types.append(stim_type)
 
-                    trial_data = self.run_trial( i, stim_type )
+                    trial_data= self.run_trial( i, stim_type )
                     trial_results.append( trial_data )
                     
                     if len(trial_data) > 0:
@@ -141,13 +143,13 @@ class FlyTrialer(QThread):
                         traj_x, traj_y = self.calc_trial_trajectory( dx, dy )
 
                         # plot data
-                        label_str = 'Trial: %d %s' % (i,self.stim_type_d[stim_type]) 
+                        label_str = 'Trial: %d %s' % ( i, self.stim_type_d[stim_type] ) 
                         self.axes1.hold(True)
                         self.axes1.plot( traj_x, traj_y, label=label_str)
                         
                         # Find the x,y value corresponding to the start of stim
                         # label this value with an 'X'
-                        t_plot = np.asarray(t)-t[0]
+                        t_plot = np.asarray( t ) - t[ 0 ]
                                                 
                         t_plot_stim = np.where( t_plot > self.stim_t )
                         t_idx = t_plot_stim[0]
@@ -166,15 +168,15 @@ class FlyTrialer(QThread):
                         self.axes_xt.plot(t_plot, traj_x, label=label_str)
                         self.axes_xt.set_xlabel('Time (s)')
                         self.axes_xt.set_ylabel('x distance (au)')
-                        lh = self.axes_xt.legend(prop={'size':6})
-                        lh.draggable(True)
+                        lh = self.axes_xt.legend( prop={'size':6} )
+                        lh.draggable( True )
 
                         self.axes_yt.hold(True)
                         self.axes_yt.plot(t_plot, traj_y, label=label_str)
                         self.axes_yt.set_xlabel('Time (s)')
                         self.axes_yt.set_ylabel('y distance (au)')
-                        lh = self.axes_yt.legend(prop={'size':6})         
-                        lh.draggable(True)
+                        lh = self.axes_yt.legend( prop={'size':6} )         
+                        lh.draggable( True )
 
                         self.fig2.canvas.draw()
 

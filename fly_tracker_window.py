@@ -42,6 +42,7 @@ class FlyTrackerWindow(QMainWindow):
         self.ui.flush_box.valueChanged.connect(self.flush_changed_callback)
         self.ui.trial_period_box.valueChanged.connect(self.trial_period_changed_callback)
         self.ui.num_trials_box.valueChanged.connect(self.num_trials_changed_callback)
+        self.ui.max_velocity.valueChanged.connect(self.max_velocity_changed_callback)
 
         self.ui.stim_type.currentIndexChanged['QString'].connect(self.stim_type_changed_callback)
 
@@ -124,7 +125,9 @@ class FlyTrackerWindow(QMainWindow):
         self.data_q_cont = Queue.Queue()
         self.data_q_trial = Queue.Queue()
         self.trial_ball_data_acq_start_event = threading.Event() # Needed to trigger start of trial
-        self.ballReader  = FlyBallReaderThread( self.data_q_cont, self.data_q_trial, self.trial_ball_data_acq_start_event ) 
+        self.ballReader  = FlyBallReaderThread( self.data_q_cont, 
+                                                self.data_q_trial, 
+                                                self.trial_ball_data_acq_start_event ) 
         
         # Init trial handler
         self.th = FlyTrialer( self.start_t,
@@ -163,5 +166,6 @@ class FlyTrackerWindow(QMainWindow):
                              self.trial_period_t, self.stim_type, 
                              self.prate, self.experimentDir )
         
-
+    def max_velocity_changed_callback(self,val):
+        self.ballPlotterCont.set_max_velocity(val)
 
