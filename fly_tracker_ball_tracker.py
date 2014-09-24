@@ -261,7 +261,7 @@ class FlyBallReaderThread(threading.Thread):
         self.trial_ball_data_acq_start_event = trial_ball_data_acq_start_event
         
         # self.mouse = file('/dev/input/mouse0')
-        self.mouse_dev = evdev.InputDevice('/dev/input/event4')
+        self.mouse_dev = evdev.InputDevice('/dev/input/event2')
 
         self.setDaemon(True)
         self.start()
@@ -290,6 +290,7 @@ class FlyBallReaderThread(threading.Thread):
                     dx = event.value
                 elif coord == evdev.ecodes.REL_Y:
                     dy = -1 * event.value
+                    #dy = event.value
 
                 # Wait for both x and y to be there for the same t
                 # Assumes no duplicates, and monotonically increasing times

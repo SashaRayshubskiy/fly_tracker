@@ -14,6 +14,8 @@ import Queue
 import threading 
 import time
 
+from subprocess import call
+
 class FlyTrackerWindow(QMainWindow):
     def __init__(self):
         super(FlyTrackerWindow, self).__init__()
@@ -100,6 +102,9 @@ class FlyTrackerWindow(QMainWindow):
                                                               "Choose an experiment directory", "/home/sasha/fly_trackball_data/")
 
         self.ui.experimental_dir_text.setPlainText( self.experimentDir )    
+        
+        # chown the directory by user
+        call(['chown', 'sasha', self.experimentDir])
 
     def finalize(self):
         self.sp.close()

@@ -79,6 +79,8 @@ class FlyTrialer(QThread):
         self.axes_xt = self.fig2.add_subplot(211)
         self.axes_yt = self.fig2.add_subplot(212)
         
+        
+        
         self.start()                    
 
     def calc_trial_trajectory(self, dx, dy):
@@ -109,26 +111,40 @@ class FlyTrialer(QThread):
                 self.fig1.canvas.draw()
                 self.fig2.canvas.draw()
 
-                run_data = []                
                 stim_type = None
                 
                 run_stim_types = []
+                
+                # Create a list of stimulation types 
+                trial_types_d = []
+                num_of_trials_per_stim_type = int(math.ceil(float(self.num_trials)/len(self.stim_type_for_random)))
+                for stim_type_idx in range(len(self.stim_type_for_random)):
+                    for trial_idx in range( num_of_trials_per_stim_type ):
+                        trial_types_d.append( stim_type_idx )
+
+                # Save basedir
+                savedatabase =  self.experimentDir + '/' + datetime.now().strftime( self.FORMAT ) 
 
                 for i in range(self.num_trials):
                                         
                     # Select a random stim type
                     if self.stim_type_selected == 'Random':
                         
-                        rand_idx  = random.randrange( len(self.stim_type_for_random) )
-                        stim_type = self.stim_type_for_random[ rand_idx ] 
+                        # rand_idx  = random.randrange( len(self.stim_type_for_random) )
+                        # stim_type = self.stim_type_for_random[ rand_idx ] 
 
-                        # stim_type = random.choice(self.stim_type_d.keys())
+                        rand_idx  = random.randrange( len( trial_types_d ) )                        
+                        stim_type_idx = trial_types_d[ rand_idx ]
+                        del trial_types_d[ rand_idx ]
+                        stim_type = self.stim_type_for_random[ stim_type_idx ] 
+
+                        # stim_type = random.choice( trial_types_d )
                     else:
                         stim_type = self.stim_type_selected
 
                     run_stim_types.append(stim_type)
 
-                    trial_data= self.run_trial( i, stim_type )
+                    trial_data = self.run_trial( i, stim_type )
                     trial_results.append( trial_data )
                     
                     if len(trial_data) > 0:
@@ -138,7 +154,11 @@ class FlyTrialer(QThread):
                         trial_data['t'] = t
                         trial_data['dx'] = dx
                         trial_data['dy'] = dy
-                        run_data.append( trial_data )                    
+
+                        # save trial data
+                        cur_datapath = savedatabase + '_' + stim_type
+                        trial_datapath = cur_datapath + "_raw_trial_" + str( i )
+                        scipy.io.savemat( trial_datapath + '.mat', trial_data )
 
                         traj_x, traj_y = self.calc_trial_trajectory( dx, dy )
 
@@ -179,7 +199,7 @@ class FlyTrialer(QThread):
                         lh.draggable( True )
 
                         self.fig2.canvas.draw()
-
+                        
                         # save data
                         if i == (self.num_trials-1):
                             
@@ -191,21 +211,14 @@ class FlyTrialer(QThread):
                             self.fig2.savefig( datapathbase + '_xy_t.eps', format='eps', dpi=1000, bbox_inches='tight')
                             self.fig2.savefig( datapathbase + '_xy_t.png', format='png', dpi=1000, bbox_inches='tight')
 
-                            # Save each trial as a separate .mat file
-                            for i, td in enumerate( run_data ):
-                                stim_type = run_stim_types[ i ]
-                                cur_datapath = datapathbase + '_' + stim_type
-                                trial_datapath = cur_datapath + "_raw_trial_" + str( i )
-                                scipy.io.savemat( trial_datapath + '.mat', td )
-                        
                     if self.num_trials > 1 and i != self.num_trials-1:
                         # Pause
                         print "(%f) Finished trial: %d" % (time.time()-self.start_t, i)
                         self.sleep_with_status_update(self.trial_period_t, "Inter trial wait" )
 
-                    print "(%f) Trial runs complete" % (time.time()-self.start_t)
-                    self.trial_start_event.clear()
-                    self.runId = self.runId + 1
+                print "(%f) Trial runs complete" % (time.time()-self.start_t)
+                self.trial_start_event.clear()
+                self.runId = self.runId + 1
 
     def sleep_with_status_update(self, sleep_t, name):
         
@@ -280,7 +293,7 @@ class FlyTrialer(QThread):
         self.sp.set_rate( 10.0 )
 
         # Set pinch valves for 'Both Air'
-        self.dr.activate_pinch_valves('Both Air')
+        self.dr.activate_pinch_valves('Both_Air')
 
         # Start flush
         self.sp.start()
