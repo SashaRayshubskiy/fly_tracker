@@ -7,7 +7,7 @@ class SyringePumper:
     
     debug = True
     
-    def __init__(self, start_t, diameter, prate):      
+    def __init__(self, start_t, syringe_size, prate):      
 
         self.start_t = start_t
 
@@ -17,8 +17,23 @@ class SyringePumper:
         # Set the appropriete syringe pump defaults
         self.write_to_serial_sock("LN 1")
         self.set_rate(prate)
-        self.set_diameter(diameter)
+        self.syringe_diameter = self.get_diameter( self.syringe_size )        
+        self.set_syringe_size(syringe_size)
         self.withdraw()
+
+    def get_diameter(self, syringe_size):
+        diameter = -1
+        if syringe_size == 10.0:
+            diameter = 14.5
+        elif syringe_size == 20.0:
+            diameter = 19.13
+        elif syringe_size == 30.0:
+            diameter = 21.69
+        elif syringe_size == 60.0:
+            diameter = 26.72
+        else:
+            print "ERROR: set syringe size to diameter mapping for size: %f" % ( syringe_size )
+            return diameter        
 
     def write_to_serial_sock(self, str):
         self.ser_s.write(str + "\r")
@@ -130,6 +145,14 @@ class SyringePumper:
         d_str = "1 RAT %2.1f MM * 2 RAT %2.1f MM *" % (rate, rate);
         print "set_rate command: %s" % (d_str) 
         self.write_to_serial_sock(d_str)
+
+    def set_syringe_size(self, syringe_size):
+        if self.debug: 
+            print "(%f): called set_diameter" % (time.time()-self.start_t)
+
+        self.syringe_size = syringe_size
+        self.syringe_diameter = self.get_diameter( self.syringe_size )        
+        self.set_diameter( self.syringe_diameter )
 
     def set_diameter(self, diameter):
         if self.debug: 

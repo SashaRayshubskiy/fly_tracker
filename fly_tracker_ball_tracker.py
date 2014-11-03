@@ -135,7 +135,7 @@ class FlyBallPlotterContinuous:
 
     def close(self):
         self.save_raw()
-        self.save_figs()
+        # self.save_figs()
 
     def set_max_velocity(self,val):
         self.rmax = val
@@ -155,7 +155,7 @@ class FlyBallPlotterContinuous:
 
             if len(self.t_all) > self.RAWDATA_FLUSH_THRESHOLD:
                 self.save_raw()
-                self.save_figs()
+                # self.save_figs()
                 self.t_all = np.zeros(0)
                 self.dx_all = np.zeros(0)
                 self.dy_all = np.zeros(0)
@@ -289,8 +289,8 @@ class FlyBallReaderThread(threading.Thread):
                 if coord == evdev.ecodes.REL_X:
                     dx = event.value
                 elif coord == evdev.ecodes.REL_Y:
-                    dy = -1 * event.value
-                    #dy = event.value
+                    #dy = -1 * event.value
+                    dy = event.value
 
                 # Wait for both x and y to be there for the same t
                 # Assumes no duplicates, and monotonically increasing times

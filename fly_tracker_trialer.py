@@ -10,7 +10,7 @@ from datetime import datetime
 
 import scipy.io
 
-from syringe_pumper import *
+from syringe_pumper_chemyx import *
 from daq_rider import *
 
 from threading import Timer, Event
@@ -19,6 +19,9 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from fly_tracker_utils import get_all_from_queue
+from subprocess import call
+
+import os
 
 class FlyTrialer(QThread):
     def __init__(self, start_t, sp, dr, geometry1, geometry2, central_widget, 
@@ -34,16 +37,18 @@ class FlyTrialer(QThread):
         self.trial_data_q = trial_data_q
 
         self.experimentDir   = None
-        self.prate           = -1.0
         self.num_trials      = -1
-        self.pre_stim_t      = -1
-        self.stim_t          = -1
-        self.flush_t         = -1
-        self.trial_period_t  = -1
+        self.pre_stim_t      = -1.0
+        self.stim_t          = -1.0
+        self.flush_t         = -1.0
+        self.trial_period_t  = -1.0
         self.stim_type_selected       = None
 
         self.runId           = 0
-        self.trial_withdraw_t = 20.0
+        self.trial_withdraw_t = -1.0
+        self.stim_prate       = -1.0
+        self.flush_prate      = -1.0
+        self.withdrawal_prate = self.sp.get_max_rate()
 
         self.FORMAT = '%Y_%m%d_%H%M%S'
         self.start_t = start_t
@@ -52,8 +57,17 @@ class FlyTrialer(QThread):
         self.stim_type_d['Both_Odor'] = 'BO'
         self.stim_type_d['Left_Odor'] = 'LO'
         self.stim_type_d['Right_Odor'] = 'RO'
+        self.stim_type_d['Left_Air'] = 'LA'
+        self.stim_type_d['Right_Air'] = 'RA'
 
-        self.stim_type_for_random = [ 'Both_Air', 'Both_Odor', 'Left_Odor', 'Right_Odor' ]
+        self.stim_type_for_random = [ 'Both_Air', 'Both_Odor', 'Left_Odor', 'Right_Odor', 'Left_Air', 'Right_Air' ]
+        self.stim_type_color_d = {}
+        self.stim_type_color_d['Both_Air'] = 'black'
+        self.stim_type_color_d['Both_Odor'] = 'blue'
+        self.stim_type_color_d['Left_Odor'] = 'green'
+        self.stim_type_color_d['Right_Odor'] = 'cyan'
+        self.stim_type_color_d['Left_Air'] = 'red'
+        self.stim_type_color_d['Right_Air'] = 'magenta'
         
 
         # Setup plot area
@@ -78,8 +92,6 @@ class FlyTrialer(QThread):
         self.canvas2.setParent( self.plot_area2 )
         self.axes_xt = self.fig2.add_subplot(211)
         self.axes_yt = self.fig2.add_subplot(212)
-        
-        
         
         self.start()                    
 
@@ -114,6 +126,10 @@ class FlyTrialer(QThread):
                 stim_type = None
                 
                 run_stim_types = []
+
+                first_time_labels_d = {}
+                for key in self.stim_type_color_d:
+                    first_time_labels_d[ key ] = True
                 
                 # Create a list of stimulation types 
                 trial_types_d = []
@@ -158,14 +174,27 @@ class FlyTrialer(QThread):
                         # save trial data
                         cur_datapath = savedatabase + '_' + stim_type
                         trial_datapath = cur_datapath + "_raw_trial_" + str( i )
+                        
                         scipy.io.savemat( trial_datapath + '.mat', trial_data )
+
+                        # rsync the data to orchestra
+                        # call(['rsync', '-rite', 'ssh', self.experimentDir, 'ar296@orchestra:~/data/'])
 
                         traj_x, traj_y = self.calc_trial_trajectory( dx, dy )
 
+                        plt_clr = self.stim_type_color_d[stim_type]
+
                         # plot data
-                        label_str = 'Trial: %d %s' % ( i, self.stim_type_d[stim_type] ) 
+                        # label_str = 'Trial: %d %s' % ( i, self.stim_type_d[stim_type] ) 
+
+                        if first_time_labels_d[stim_type] == True:
+                            label_str = '%s' % ( self.stim_type_d[stim_type] ) 
+                            first_time_labels_d[stim_type] = False
+                        else:
+                            label_str = ''
+
                         self.axes1.hold(True)
-                        self.axes1.plot( traj_x, traj_y, label=label_str)
+                        self.axes1.plot( traj_x, traj_y, label=label_str, color=plt_clr)
                         
                         # Find the x,y value corresponding to the start of stim
                         # label this value with an 'X'
@@ -174,7 +203,7 @@ class FlyTrialer(QThread):
                         t_plot_stim = np.where( t_plot > self.stim_t )
                         t_idx = t_plot_stim[0]
                                                 
-                        self.axes1.plot( traj_x[t_idx], traj_y[t_idx], 'x')
+                        self.axes1.plot( traj_x[t_idx], traj_y[t_idx], 'x', color=plt_clr)
 
                         self.axes1.set_xlabel('x distance (au)')
                         self.axes1.set_ylabel('y distance (au)')
@@ -185,14 +214,14 @@ class FlyTrialer(QThread):
                         
                         # Plot x and y vs time
                         self.axes_xt.hold(True)
-                        self.axes_xt.plot(t_plot, traj_x, label=label_str)
+                        self.axes_xt.plot(t_plot, traj_x, label=label_str, color=plt_clr)
                         self.axes_xt.set_xlabel('Time (s)')
                         self.axes_xt.set_ylabel('x distance (au)')
                         lh = self.axes_xt.legend( prop={'size':6} )
                         lh.draggable( True )
 
                         self.axes_yt.hold(True)
-                        self.axes_yt.plot(t_plot, traj_y, label=label_str)
+                        self.axes_yt.plot(t_plot, traj_y, label=label_str, color=plt_clr)
                         self.axes_yt.set_xlabel('Time (s)')
                         self.axes_yt.set_ylabel('y distance (au)')
                         lh = self.axes_yt.legend( prop={'size':6} )         
@@ -210,6 +239,13 @@ class FlyTrialer(QThread):
 
                             self.fig2.savefig( datapathbase + '_xy_t.eps', format='eps', dpi=1000, bbox_inches='tight')
                             self.fig2.savefig( datapathbase + '_xy_t.png', format='png', dpi=1000, bbox_inches='tight')
+                    else:
+                        print 'WARNING: Trial produced no data, the fly wasn\'t moving'
+                        # Send warning email
+                        flyId = os.path.basename( self.experimentDir )
+                        FNULL = open(os.devnull, 'w')
+                        call(['mail', '-s', 'WARNING:: %s: trial %d produced no data.' % (flyId,i), 'druzhiche@gmail.com'], stdin=FNULL )
+                        FNULL.close()
 
                     if self.num_trials > 1 and i != self.num_trials-1:
                         # Pause
@@ -221,34 +257,55 @@ class FlyTrialer(QThread):
                 self.runId = self.runId + 1
 
     def sleep_with_status_update(self, sleep_t, name):
-        
-        if not sleep_t.is_integer():
-            raise Exception( "ERROR: sleep time is not an integer: %f" % ( sleep_t ))
+
+        t0 = time.time()
+        sleep_t_int = math.floor(sleep_t)
 
         print "(%f::%s): About to sleep for %f sec" % (time.time()-self.start_t, name, float(sleep_t))
-        for st in range(int(sleep_t)):
+        for st in range(int(sleep_t_int)):
             time.sleep(1)
             sys.stdout.write('.')
             sys.stdout.flush()
         sys.stdout.write('\n')        
 
-    def start_trials(self, num_trials, pre_stim_t, stim_t, flush_t, trial_period_t, stim_type, prate, experiment_dir):
+        # Sleep for the rest of the time [0,1)
+        time.sleep(sleep_t-sleep_t_int)
+        t1 = time.time()
+        print 'Sleep_t: %f   sleep call time actual: %f' % ( sleep_t, t1-t0 )
+
+    def start_trials(self, num_trials, pre_stim_t, stim_t, flush_t, trial_period_t, stim_type, stim_prate, flush_prate, experiment_dir):
         
         if experiment_dir == None:
             print "ERROR: Please set the experiment directory path"
             return
 
         self.experimentDir   = experiment_dir
-        self.prate           = prate
+        self.stim_prate      = stim_prate
+        self.flush_prate     = flush_prate
         self.num_trials      = num_trials
         self.pre_stim_t      = pre_stim_t
         self.stim_t          = stim_t
         self.flush_t         = flush_t
         self.trial_period_t  = trial_period_t
         self.stim_type_selected = stim_type
+
+        # Write a log file with run parameters
+        log_filename =  self.experimentDir + '/' + datetime.now().strftime( self.FORMAT ) + '_' + 'run.log'
+        with open(log_filename, 'a') as log_file:
+            log_file.write('stim pump rate: %f\n' % (self.stim_prate))
+            log_file.write('flush pump rate: %f\n' % (self.flush_prate))
+            log_file.write('number of trials: %d\n' % (self.num_trials))
+            log_file.write('pre stim: %f\n' % (self.pre_stim_t))
+            log_file.write('stim: %f\n' % (self.stim_t))
+            log_file.write('flush: %f\n' % (self.flush_t))
+            log_file.write('trial period: %f\n' % (self.trial_period_t))
+            log_file.write('stim type: %s\n' % (self.stim_type_selected))
     
-        self.trial_start_event.set() 
-        
+        # Set the time needed to withdraw air for each trial
+        self.trial_withdraw_t = (self.stim_prate*self.stim_t + self.flush_prate*self.flush_t) / self.withdrawal_prate
+        print 'self.trial_withdraw_t: ', self.trial_withdraw_t
+
+        self.trial_start_event.set()         
             
     def run_trial(self, trial_ord, stim_type):
         
@@ -256,22 +313,33 @@ class FlyTrialer(QThread):
         self.dr.reset_all()
 
         # Set syringe pump to max rate and withdraw
-        self.sp.set_rate(10.0)
+        self.sp.set_rate( self.withdrawal_prate )
         self.sp.withdraw()
 
-        self.sp.start()
-        self.sleep_with_status_update(self.trial_withdraw_t, "Syringe pump withdraw before stim")
+        # WARNING: Syringe pumps require some flush time (see, sleep call in write_to_serial_socket)
+        # This flush time needs to be accounted syringe movement duration.
+        t = self.sp.start()
+        MAGIC_FACTOR = 1.0*t # Needed to have pumps return to the same place after a cycle
+        #MAGIC_FACTOR = 0 # Needed to have pumps return to the same place after a cycle
+        self.sleep_with_status_update(self.trial_withdraw_t+MAGIC_FACTOR, "Syringe pump withdraw before stim")
         self.sp.stop()
 
         # Prepare syringe pumps for stim
         self.sp.infuse()
-        print "Infuse prate: ", self.prate
-        self.sp.set_rate( self.prate )
+        print "Infuse prate: ", self.stim_prate
+        self.sp.set_rate( self.stim_prate )
 
         # Prepare valves for stim
         self.dr.activate_pinch_valves( stim_type )
-        self.dr.activate_3way_valves()
         
+        if stim_type == 'Left_Air':
+            self.dr.activate_3way_valve_left()
+        elif stim_type == 'Right_Air':
+            self.dr.activate_3way_valve_right()
+        else:
+            self.dr.activate_3way_valves()
+        
+        # CAREFUL: BEGIN trial timing
         # Pause for 10 seconds before starting stim, as per Gaudry et al.
         # Wait for 5 seconds after valve switch
         # Take 5 seconds of baseline
@@ -285,20 +353,22 @@ class FlyTrialer(QThread):
         
         # Start stim
         print "(%f): About to start stim for %f seconds" % (time.time()-self.start_t, self.stim_t)
-        self.sp.start()
-        time.sleep(self.stim_t)
+
+        t = self.sp.start()
+        time.sleep(self.stim_t-t)
         self.sp.stop()
 
         # Prepare syringe pumps for flush 
-        self.sp.set_rate( 10.0 )
+        self.sp.set_rate( self.flush_prate )
 
         # Set pinch valves for 'Both Air'
         self.dr.activate_pinch_valves('Both_Air')
 
         # Start flush
-        self.sp.start()
-        self.sleep_with_status_update(self.flush_t, "Flush")
+        t = self.sp.start()
+        self.sleep_with_status_update(self.flush_t-t, "Flush")
         self.sp.stop()
+        # CAREFUL: END trial timing
 
         # Ready to read trial data
         self.trial_ball_data_acq_start_event.clear()
@@ -306,7 +376,7 @@ class FlyTrialer(QThread):
 
         # Trial data ready to plot
         # Read data from queue
-        qdata = list(get_all_from_queue(self.trial_data_q))
+        qdata = list( get_all_from_queue( self.trial_data_q ) )
 
         return qdata
 

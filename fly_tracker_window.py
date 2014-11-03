@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 from fly_tracker_gui_auto import Ui_FlyTracker
 
 from camera_acq import *
-from syringe_pumper import *
+from syringe_pumper_chemyx import *
 from daq_rider import *
 from fly_tracker_trialer import *
 from fly_tracker_ball_tracker import *
@@ -38,7 +38,9 @@ class FlyTrackerWindow(QMainWindow):
 
         # Create UI text edit connections 
         self.ui.rate_box.valueChanged.connect(self.rate_changed_callback)
-        self.ui.diameter_box.valueChanged.connect(self.diameter_changed_callback)
+        self.ui.stim_prate_box.valueChanged.connect(self.stim_rate_changed_callback)
+        self.ui.flush_prate_box.valueChanged.connect(self.flush_rate_changed_callback)
+        self.ui.syringe_size_box.valueChanged.connect(self.syringe_size_changed_callback)
         self.ui.pre_stim_box.valueChanged.connect(self.pre_stim_changed_callback)
         self.ui.stim_box.valueChanged.connect(self.stim_changed_callback)
         self.ui.flush_box.valueChanged.connect(self.flush_changed_callback)
@@ -50,8 +52,10 @@ class FlyTrackerWindow(QMainWindow):
 
         # Init GUI variables
         self.experimentDir   = None
-        self.diameter        = self.ui.diameter_box.value()
+        self.syringe_size     = self.ui.syringe_size_box.value()
         self.prate           = self.ui.rate_box.value()
+        self.stim_prate      = self.ui.stim_prate_box.value()
+        self.flush_prate     = self.ui.flush_prate_box.value()
         self.num_trials      = self.ui.num_trials_box.value()
         self.pre_stim_t      = self.ui.pre_stim_box.value()
         self.stim_t          = self.ui.stim_box.value()
@@ -77,9 +81,15 @@ class FlyTrackerWindow(QMainWindow):
         self.prate           = val
         self.sp.set_rate(val)
 
-    def diameter_changed_callback(self, val):
-        self.diameter = val
-        self.sp.set_diameter(val)
+    def stim_rate_changed_callback(self, val):
+        self.stim_prate           = val
+
+    def flush_rate_changed_callback(self, val):
+        self.flush_prate           = val
+
+    def syringe_size_changed_callback(self, val):
+        self.syringe_size = val
+        self.sp.set_syringe_size(val)
 
     def pre_stim_changed_callback(self, val):
         self.pre_stim_t = val
@@ -117,7 +127,7 @@ class FlyTrackerWindow(QMainWindow):
     def init(self):
 
         # Init syringe pump
-        self.sp = SyringePumper(self.start_t, self.diameter, self.prate)
+        self.sp = SyringePumper(self.start_t, self.syringe_size, self.prate)
 
         # Connect to cameras
         camera_geometries = [ self.ui.camera1.geometry(), self.ui.camera2.geometry() ]
@@ -151,7 +161,6 @@ class FlyTrackerWindow(QMainWindow):
                                                          self.ui.centralwidget, 
                                                          self.experimentDir )
 
-
     def infuse_clicked_callback(self, val):
         self.sp.infuse()
 
@@ -164,12 +173,11 @@ class FlyTrackerWindow(QMainWindow):
     def stop_clicked_callback(self, val):
         self.sp.stop()
 
-    def run_clicked_callback(self, val):        
-        
+    def run_clicked_callback(self, val):
         self.th.start_trials( self.num_trials, self.pre_stim_t, 
-                             self.stim_t, self.flush_t, 
-                             self.trial_period_t, self.stim_type, 
-                             self.prate, self.experimentDir )
+                              self.stim_t, self.flush_t, 
+                              self.trial_period_t, self.stim_type, 
+                              self.stim_prate, self.flush_prate, self.experimentDir )
         
     def max_velocity_changed_callback(self,val):
         self.ballPlotterCont.set_max_velocity(val)
