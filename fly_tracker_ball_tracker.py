@@ -314,7 +314,7 @@ class FlyBallReaderThread(threading.Thread):
                     self.data_q.put( ( t, dx, dy ) )
 
                     if self.trial_ball_data_acq_start_event.isSet():
-                        print "TD: %f TC: %f" % (time.time(), t )
+                        # print "TD: %f TC: %f" % (time.time(), t )
                         self.trial_data_q.put( ( t, dx, dy ) )
 
                 elif prev_t != -1:
@@ -324,7 +324,7 @@ class FlyBallReaderThread(threading.Thread):
                         if is_first_time_point_of_trial: 
                             is_first_time_point_of_trial = False
                         else:
-                            print "TD: %f TP: %f TC: %f" % (time.time(), prev_t, t )
+                            # print "TD: %f TP: %f TC: %f" % (time.time(), prev_t, t )
                             self.trial_data_q.put( ( prev_t, prev_dx, prev_dy ) )                         
                     else:
                         is_first_time_point_of_trial = True                        
