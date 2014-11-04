@@ -5,7 +5,7 @@ import Queue
 import threading
 import scipy.io
 from datetime import datetime
-
+from threading import Timer, Event
 from PyQt5.QtWidgets import  QWidget
 from PyQt5.QtCore import *
 
@@ -82,7 +82,7 @@ class FlyBallPlotterContinuous:
         ##################################
 
         # Setup update timer
-        self.update_freq = 20
+        self.update_freq = 0.5
         self.timer = QTimer()
         self.timer.timeout.connect( self.updatePlot )
         self.timer.start( 1000.0 / self.update_freq )
@@ -113,6 +113,9 @@ class FlyBallPlotterContinuous:
         self.vel_win_count = 0
         self.update_count = 0
 
+        self.f_on = Event()
+        self.f_on.set()
+
     def save_figs(self):
         if self.experiment_dir is not None:        
             datapathbase =  self.experiment_dir + '/' + datetime.now().strftime( self.FORMAT )
@@ -140,6 +143,22 @@ class FlyBallPlotterContinuous:
     def set_max_velocity(self,val):
         self.rmax = val
         
+    def flush_on(self):
+        self.f_on.set()
+
+    def flush_off(self):
+        self.f_on.clear()
+
+    def flush(self):
+        self.save_raw()
+        # self.save_figs()
+        self.t_all = np.zeros(0)
+        self.dx_all = np.zeros(0)
+        self.dy_all = np.zeros(0)
+        self.axes.clear()
+        self.cur_traj_x = 0
+        self.cur_traj_y = 0        
+
     def updatePlot(self):
         
         # Read data from queue
@@ -153,16 +172,9 @@ class FlyBallPlotterContinuous:
             self.dx_all = np.append(self.dx_all, dx)
             self.dy_all = np.append(self.dy_all, dy)            
 
-            if len(self.t_all) > self.RAWDATA_FLUSH_THRESHOLD:
-                self.save_raw()
-                # self.save_figs()
-                self.t_all = np.zeros(0)
-                self.dx_all = np.zeros(0)
-                self.dy_all = np.zeros(0)
-                self.axes.clear()
-                self.cur_traj_x = 0
-                self.cur_traj_y = 0
-                
+            if self.f_on.isSet() and len(self.t_all) > self.RAWDATA_FLUSH_THRESHOLD:
+                self.flush()
+
             # Calculate trajectory
             i=0
             traj_x = np.zeros( len(dx) )
@@ -278,6 +290,8 @@ class FlyBallReaderThread(threading.Thread):
         dx = 0
         dy = 0
 
+        is_first_time_point_of_trial = True
+
         # Merge t,dx and t,dy data streams  
         # into t,dx,dy
         for event in self.mouse_dev.read_loop():
@@ -298,16 +312,23 @@ class FlyBallReaderThread(threading.Thread):
                     # both dx and dy are set
                     reset_prev = True
                     self.data_q.put( ( t, dx, dy ) )
-            
+
                     if self.trial_ball_data_acq_start_event.isSet():
-                        self.trial_data_q.put( ( t, dx, dy ) ) 
+                        # print "TD: %f TC: %f" % (time.time(), t )
+                        self.trial_data_q.put( ( t, dx, dy ) )
 
                 elif prev_t != -1:
                     self.data_q.put( ( prev_t, prev_dx, prev_dy ) )
             
                     if self.trial_ball_data_acq_start_event.isSet():
-                        self.trial_data_q.put( ( prev_t, prev_dx, prev_dy ) )                         
-
+                        if is_first_time_point_of_trial: 
+                            is_first_time_point_of_trial = False
+                        else:
+                            # print "TD: %f TP: %f TC: %f" % (time.time(), prev_t, t )
+                            self.trial_data_q.put( ( prev_t, prev_dx, prev_dy ) )                         
+                    else:
+                        is_first_time_point_of_trial = True                        
+                    
                 if reset_prev:
                     reset_prev = False
                     prev_t = -1

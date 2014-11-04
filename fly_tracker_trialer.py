@@ -26,11 +26,15 @@ import os
 class FlyTrialer(QThread):
     def __init__(self, start_t, sp, dr, geometry1, geometry2, central_widget, 
                  trial_data_q, 
-                 trial_ball_data_acq_start_event):
+                 trial_ball_data_acq_start_event,
+                 ball_plotter_cont ):
         super(FlyTrialer, self).__init__(None)
-        
+                
         self.sp = sp
         self.dr = dr
+
+        self.ball_plotter_cont = ball_plotter_cont
+        self.GLOBAL_DATA_FLUSH_PERIOD_IN_TRIALS = 5
         
         self.trial_start_event = Event()
         self.trial_ball_data_acq_start_event = trial_ball_data_acq_start_event
@@ -141,6 +145,7 @@ class FlyTrialer(QThread):
                 # Save basedir
                 savedatabase =  self.experimentDir + '/' + datetime.now().strftime( self.FORMAT ) 
 
+                self.ball_plotter_cont.flush_off()
                 for i in range(self.num_trials):
                                         
                     # Select a random stim type
@@ -204,7 +209,6 @@ class FlyTrialer(QThread):
                         t_idx = t_plot_stim[0]
                                                 
                         self.axes1.plot( traj_x[t_idx], traj_y[t_idx], 'x', color=plt_clr)
-
                         self.axes1.set_xlabel('x distance (au)')
                         self.axes1.set_ylabel('y distance (au)')
                         lh = self.axes1.legend(prop={'size':6})
@@ -215,6 +219,7 @@ class FlyTrialer(QThread):
                         # Plot x and y vs time
                         self.axes_xt.hold(True)
                         self.axes_xt.plot(t_plot, traj_x, label=label_str, color=plt_clr)
+                        self.axes_xt.set_xlim([0, max(t_plot)])
                         self.axes_xt.set_xlabel('Time (s)')
                         self.axes_xt.set_ylabel('x distance (au)')
                         lh = self.axes_xt.legend( prop={'size':6} )
@@ -222,6 +227,7 @@ class FlyTrialer(QThread):
 
                         self.axes_yt.hold(True)
                         self.axes_yt.plot(t_plot, traj_y, label=label_str, color=plt_clr)
+                        self.axes_yt.set_xlim([0, max(t_plot)])
                         self.axes_yt.set_xlabel('Time (s)')
                         self.axes_yt.set_ylabel('y distance (au)')
                         lh = self.axes_yt.legend( prop={'size':6} )         
@@ -252,6 +258,11 @@ class FlyTrialer(QThread):
                         print "(%f) Finished trial: %d" % (time.time()-self.start_t, i)
                         self.sleep_with_status_update(self.trial_period_t, "Inter trial wait" )
 
+                    # Flush out continuously recording data
+                    if i % self.GLOBAL_DATA_FLUSH_PERIOD_IN_TRIALS == 0:
+                        self.ball_plotter_cont.flush() 
+
+                self.ball_plotter_cont.flush_on()
                 print "(%f) Trial runs complete" % (time.time()-self.start_t)
                 self.trial_start_event.clear()
                 self.runId = self.runId + 1
@@ -345,8 +356,18 @@ class FlyTrialer(QThread):
         # Take 5 seconds of baseline
         self.sleep_with_status_update(5.0, "Wait before start of data acq")
 
-        # Start trial, acquire ball data and camera data to save
+        ####
+        ## Start trial, acquire ball data and camera data to save
+        ####
+        
+        # First clear the trial queue, and add time point 0
+        # This is neccessary because the event based system, might not have 
+        # a time point 0 until the first event
+        self.trial_data_q.queue.clear()
+        self.trial_data_q.put( (time.time(), 0, 0) )
+
         self.trial_ball_data_acq_start_event.set()
+        print "Set the trial ball time: %f" % ( time.time() )
 
         # baseline
         self.sleep_with_status_update(self.pre_stim_t, "Data Acq::Baseline")
@@ -371,7 +392,13 @@ class FlyTrialer(QThread):
         # CAREFUL: END trial timing
 
         # Ready to read trial data
+        print "Clearing the trial ball time: %f" % ( time.time() )
         self.trial_ball_data_acq_start_event.clear()
+
+        # Lastly add a time point, this is neccessary because the 
+        # event based system might not have a time point at the end.
+        self.trial_data_q.put( (time.time(), 0, 0) )
+
         self.dr.reset_all()
 
         # Trial data ready to plot

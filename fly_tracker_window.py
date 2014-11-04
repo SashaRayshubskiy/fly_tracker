@@ -144,6 +144,13 @@ class FlyTrackerWindow(QMainWindow):
                                                 self.data_q_trial, 
                                                 self.trial_ball_data_acq_start_event ) 
         
+        # Init fly ball tracker
+        self.ballPlotterCont = FlyBallPlotterContinuous( self.data_q_cont, 
+                                                         self.ui.cummulative_run.geometry(), 
+                                                         self.ui.polar_plot_1.geometry(), 
+                                                         self.ui.centralwidget, 
+                                                         self.experimentDir )
+
         # Init trial handler
         self.th = FlyTrialer( self.start_t,
             self.sp, 
@@ -152,14 +159,8 @@ class FlyTrackerWindow(QMainWindow):
             self.ui.trial_run2.geometry(), 
             self.ui.centralwidget, 
             self.data_q_trial, 
-            self.trial_ball_data_acq_start_event )
-
-        # Init fly ball tracker
-        self.ballPlotterCont = FlyBallPlotterContinuous( self.data_q_cont, 
-                                                         self.ui.cummulative_run.geometry(), 
-                                                         self.ui.polar_plot_1.geometry(), 
-                                                         self.ui.centralwidget, 
-                                                         self.experimentDir )
+            self.trial_ball_data_acq_start_event,
+            self.ballPlotterCont )
 
     def infuse_clicked_callback(self, val):
         self.sp.infuse()
