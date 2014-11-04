@@ -82,7 +82,7 @@ class FlyBallPlotterContinuous:
         ##################################
 
         # Setup update timer
-        self.update_freq = 20
+        self.update_freq = 0.5
         self.timer = QTimer()
         self.timer.timeout.connect( self.updatePlot )
         self.timer.start( 1000.0 / self.update_freq )

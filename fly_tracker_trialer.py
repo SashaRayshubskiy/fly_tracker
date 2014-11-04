@@ -209,7 +209,6 @@ class FlyTrialer(QThread):
                         t_idx = t_plot_stim[0]
                                                 
                         self.axes1.plot( traj_x[t_idx], traj_y[t_idx], 'x', color=plt_clr)
-
                         self.axes1.set_xlabel('x distance (au)')
                         self.axes1.set_ylabel('y distance (au)')
                         lh = self.axes1.legend(prop={'size':6})
@@ -220,6 +219,7 @@ class FlyTrialer(QThread):
                         # Plot x and y vs time
                         self.axes_xt.hold(True)
                         self.axes_xt.plot(t_plot, traj_x, label=label_str, color=plt_clr)
+                        self.axes_xt.set_xlim([0, max(t_plot)])
                         self.axes_xt.set_xlabel('Time (s)')
                         self.axes_xt.set_ylabel('x distance (au)')
                         lh = self.axes_xt.legend( prop={'size':6} )
@@ -227,6 +227,7 @@ class FlyTrialer(QThread):
 
                         self.axes_yt.hold(True)
                         self.axes_yt.plot(t_plot, traj_y, label=label_str, color=plt_clr)
+                        self.axes_yt.set_xlim([0, max(t_plot)])
                         self.axes_yt.set_xlabel('Time (s)')
                         self.axes_yt.set_ylabel('y distance (au)')
                         lh = self.axes_yt.legend( prop={'size':6} )         
