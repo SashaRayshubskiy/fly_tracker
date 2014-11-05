@@ -168,7 +168,8 @@ class FlyTrialer(QThread):
                     trial_data = self.run_trial( i, stim_type )
                     trial_results.append( trial_data )
                     
-                    if len(trial_data) > 0:
+                    # Will always have at least 2: {begin time, end time}
+                    if len(trial_data) > 2:
                         t, dx, dy = zip(*trial_data)
                         
                         trial_data = {}
