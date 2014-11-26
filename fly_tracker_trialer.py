@@ -10,8 +10,9 @@ from datetime import datetime
 
 import scipy.io
 
+from scanimage_client import *
 from syringe_pumper_chemyx import *
-from daq_rider import *
+from daq_rider_v2 import *
 
 from threading import Timer, Event
 import matplotlib
@@ -47,6 +48,8 @@ class FlyTrialer(QThread):
         self.flush_t         = -1.0
         self.trial_period_t  = -1.0
         self.stim_type_selected       = None
+
+        self.using2p = False
 
         self.runId           = 0
         self.trial_withdraw_t = -1.0
@@ -96,6 +99,10 @@ class FlyTrialer(QThread):
         self.canvas2.setParent( self.plot_area2 )
         self.axes_xt = self.fig2.add_subplot(211)
         self.axes_yt = self.fig2.add_subplot(212)
+
+
+        self.task_file_data = None
+        self.SIclient = None
         
         self.start()                    
 
@@ -146,10 +153,16 @@ class FlyTrialer(QThread):
                 savedatabase =  self.experimentDir + '/' + datetime.now().strftime( self.FORMAT ) 
 
                 self.ball_plotter_cont.flush_off()
+
                 for i in range(self.num_trials):
                                         
                     # Select a random stim type
-                    if self.stim_type_selected == 'Random':
+                    if self.stim_type_selected == 'Task_File':
+                        stim_type = self.task_file_data[ i ]
+
+                        self.SIclient.send( stim_type + '_' + str(self.session_id) + '_' )
+
+                    elif self.stim_type_selected == 'Random':
                         
                         # rand_idx  = random.randrange( len(self.stim_type_for_random) )
                         # stim_type = self.stim_type_for_random[ rand_idx ] 
@@ -250,9 +263,9 @@ class FlyTrialer(QThread):
                         print 'WARNING: Trial produced no data, the fly wasn\'t moving'
                         # Send warning email
                         flyId = os.path.basename( self.experimentDir )
-                        FNULL = open(os.devnull, 'w')
-                        call(['mail', '-s', 'WARNING:: %s: trial %d produced no data.' % (flyId,i), 'druzhiche@gmail.com'], stdin=FNULL )
-                        FNULL.close()
+                        #FNULL = open(os.devnull, 'w')
+                        #call(['mail', '-s', 'WARNING:: %s: trial %d produced no data.' % (flyId,i), 'druzhiche@gmail.com'], stdin=FNULL )
+                        #FNULL.close()
 
                     if self.num_trials > 1 and i != self.num_trials-1:
                         # Pause
@@ -266,6 +279,10 @@ class FlyTrialer(QThread):
                 self.ball_plotter_cont.flush_on()
                 print "(%f) Trial runs complete" % (time.time()-self.start_t)
                 self.trial_start_event.clear()
+                
+                if self.stim_type_selected == 'Task_File':                    
+                    self.SIclient.send( 'END_OF_SESSION' )
+                
                 self.runId = self.runId + 1
 
     def sleep_with_status_update(self, sleep_t, name):
@@ -285,12 +302,13 @@ class FlyTrialer(QThread):
         t1 = time.time()
         print 'Sleep_t: %f   sleep call time actual: %f' % ( sleep_t, t1-t0 )
 
-    def start_trials(self, num_trials, pre_stim_t, stim_t, flush_t, trial_period_t, stim_type, stim_prate, flush_prate, experiment_dir):
+    def start_trials(self, num_trials, pre_stim_t, stim_t, flush_t, trial_period_t, stim_type, stim_prate, flush_prate, using2p, experiment_dir, task_file, session_id ):
         
         if experiment_dir == None:
             print "ERROR: Please set the experiment directory path"
             return
 
+        self.task_file       = task_file
         self.experimentDir   = experiment_dir
         self.stim_prate      = stim_prate
         self.flush_prate     = flush_prate
@@ -300,6 +318,23 @@ class FlyTrialer(QThread):
         self.flush_t         = flush_t
         self.trial_period_t  = trial_period_t
         self.stim_type_selected = stim_type
+        self.using2p            = using2p
+        self.session_id         = session_id
+
+        if self.stim_type_selected == 'Task_File':
+            self.task_file_data = []
+
+            # Read open the file 
+            ins = open( self.task_file, "r" )
+            for line in ins:
+                self.task_file_data.append( line.strip() )
+            ins.close()
+                
+            self.num_trials = len( self.task_file_data )
+            print self.num_trials
+
+            # Connection to the scanimage server
+            self.SIclient = SI_Client() 
 
         # Write a log file with run parameters
         log_filename =  self.experimentDir + '/' + datetime.now().strftime( self.FORMAT ) + '_' + 'run.log'
@@ -312,7 +347,12 @@ class FlyTrialer(QThread):
             log_file.write('flush: %f\n' % (self.flush_t))
             log_file.write('trial period: %f\n' % (self.trial_period_t))
             log_file.write('stim type: %s\n' % (self.stim_type_selected))
-    
+
+            if self.stim_type_selected == 'Task_File':
+                log_file.write( '\n\n' )
+                for i, line in enumerate( self.task_file_data ):
+                    log_file.write(line + '\n')                
+                
         # Set the time needed to withdraw air for each trial
         self.trial_withdraw_t = (self.stim_prate*self.stim_t + self.flush_prate*self.flush_t) / self.withdrawal_prate
         print 'self.trial_withdraw_t: ', self.trial_withdraw_t
@@ -360,6 +400,11 @@ class FlyTrialer(QThread):
         ####
         ## Start trial, acquire ball data and camera data to save
         ####
+        if self.using2p:
+            print '(%f): Activating 2p trigger' % (time.time())
+            self.dr.activate_2p_external_trigger()
+            self.dr.activate_2p_olfactometer_trigger()
+            self.dr.deactivate_2p_olfactometer_trigger()
         
         # First clear the trial queue, and add time point 0
         # This is neccessary because the event based system, might not have 
@@ -399,6 +444,10 @@ class FlyTrialer(QThread):
         # Lastly add a time point, this is neccessary because the 
         # event based system might not have a time point at the end.
         self.trial_data_q.put( (time.time(), 0, 0) )
+
+        if self.using2p:
+            print '(%f): Deactivating 2p trigger' % (time.time())
+            self.dr.deactivate_2p_external_trigger()
 
         self.dr.reset_all()
 

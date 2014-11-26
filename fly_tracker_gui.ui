@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1372</width>
+    <width>1377</width>
     <height>886</height>
    </rect>
   </property>
@@ -212,8 +212,8 @@
    <widget class="QPushButton" name="run_button">
     <property name="geometry">
      <rect>
-      <x>136</x>
-      <y>712</y>
+      <x>130</x>
+      <y>760</y>
       <width>157</width>
       <height>59</height>
      </rect>
@@ -486,6 +486,11 @@
       <string>Right_Air</string>
      </property>
     </item>
+    <item>
+     <property name="text">
+      <string>Task_File</string>
+     </property>
+    </item>
    </widget>
    <widget class="QLabel" name="label_5">
     <property name="geometry">
@@ -675,6 +680,95 @@
      <string>Flush rate (mL/min)</string>
     </property>
    </widget>
+   <widget class="QRadioButton" name="using2p_toggle">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>640</y>
+      <width>116</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Using 2p?</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="choose_task_file_button">
+    <property name="geometry">
+     <rect>
+      <x>306</x>
+      <y>698</y>
+      <width>24</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+    <property name="popupMode">
+     <enum>QToolButton::DelayedPopup</enum>
+    </property>
+    <property name="arrowType">
+     <enum>Qt::NoArrow</enum>
+    </property>
+   </widget>
+   <widget class="QPlainTextEdit" name="task_file_dir">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>700</y>
+      <width>291</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>9</pointsize>
+     </font>
+    </property>
+    <property name="verticalScrollBarPolicy">
+     <enum>Qt::ScrollBarAlwaysOff</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_12">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>682</y>
+      <width>71</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Tasks file:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_13">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>680</y>
+      <width>71</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Session Id:</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="session_id_box">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>700</y>
+      <width>60</width>
+      <height>27</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QMenuBar" name="menubar">
@@ -682,8 +776,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1372</width>
-     <height>27</height>
+     <width>1377</width>
+     <height>25</height>
     </rect>
    </property>
   </widget>
