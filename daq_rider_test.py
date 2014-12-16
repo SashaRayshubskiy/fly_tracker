@@ -2,6 +2,7 @@
 
 import time
 import sys
+
 from daq_rider_v2 import *
 
 dr = DAQRider(time.time())

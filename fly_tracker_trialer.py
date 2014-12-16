@@ -10,8 +10,8 @@ from datetime import datetime
 
 import scipy.io
 
+from syringe_pumper_new_era import *
 from scanimage_client import *
-from syringe_pumper_chemyx import *
 from daq_rider_v2 import *
 
 from threading import Timer, Event
