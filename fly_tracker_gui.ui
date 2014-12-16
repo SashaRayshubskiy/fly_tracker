@@ -491,6 +491,21 @@
       <string>Task_File</string>
      </property>
     </item>
+    <item>
+     <property name="text">
+      <string>Both_Air_Rev</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Left_Air_Rev</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Right_Air_Rev</string>
+     </property>
+    </item>
    </widget>
    <widget class="QLabel" name="label_5">
     <property name="geometry">

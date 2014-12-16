@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'fly_tracker_gui.ui'
 #
-# Created: Tue Nov 25 16:18:41 2014
+# Created: Wed Dec  3 20:20:22 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -158,6 +158,9 @@ class Ui_FlyTracker(object):
         self.stim_type.addItem("")
         self.stim_type.addItem("")
         self.stim_type.addItem("")
+        self.stim_type.addItem("")
+        self.stim_type.addItem("")
+        self.stim_type.addItem("")
         self.label_5 = QtWidgets.QLabel(self.centralwidget)
         self.label_5.setGeometry(QtCore.QRect(130, 644, 66, 17))
         font = QtGui.QFont()
@@ -285,6 +288,9 @@ class Ui_FlyTracker(object):
         self.stim_type.setItemText(5, _translate("FlyTracker", "Left_Air"))
         self.stim_type.setItemText(6, _translate("FlyTracker", "Right_Air"))
         self.stim_type.setItemText(7, _translate("FlyTracker", "Task_File"))
+        self.stim_type.setItemText(8, _translate("FlyTracker", "Both_Air_Rev"))
+        self.stim_type.setItemText(9, _translate("FlyTracker", "Left_Air_Rev"))
+        self.stim_type.setItemText(10, _translate("FlyTracker", "Right_Air_Rev"))
         self.label_5.setText(_translate("FlyTracker", "Stim Type"))
         self.label_9.setText(_translate("FlyTracker", "Max velocity "))
         self.label_10.setText(_translate("FlyTracker", "Stim Rate (mL/min)"))

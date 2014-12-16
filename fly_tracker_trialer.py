@@ -366,7 +366,10 @@ class FlyTrialer(QThread):
 
         # Set syringe pump to max rate and withdraw
         self.sp.set_rate( self.withdrawal_prate )
-        self.sp.withdraw()
+        if stim_type.endswith('_Rev'):
+            self.sp.infuse()
+        else:
+            self.sp.withdraw()
 
         # WARNING: Syringe pumps require some flush time (see, sleep call in write_to_serial_socket)
         # This flush time needs to be accounted syringe movement duration.
@@ -377,16 +380,20 @@ class FlyTrialer(QThread):
         self.sp.stop()
 
         # Prepare syringe pumps for stim
-        self.sp.infuse()
+        if stim_type.endswith('_Rev'):
+            self.sp.withdraw()
+        else:
+            self.sp.infuse()
+
         print "Infuse prate: ", self.stim_prate
         self.sp.set_rate( self.stim_prate )
 
         # Prepare valves for stim
         self.dr.activate_pinch_valves( stim_type )
         
-        if stim_type == 'Left_Air':
+        if stim_type == 'Left_Air' or stim_type == 'Left_Air_Rev':
             self.dr.activate_3way_valve_left()
-        elif stim_type == 'Right_Air':
+        elif stim_type == 'Right_Air' or stim_type == 'Right_Air_Rev':
             self.dr.activate_3way_valve_right()
         else:
             self.dr.activate_3way_valves()

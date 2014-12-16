@@ -206,6 +206,10 @@ class FlyTrackerWindow(QMainWindow):
                               self.experimentDir,
                               self.task_file,
                               self.session_id )
+
+        
+        self.ui.session_id_box.setValue(self.session_id+1)
+        self.session_id = self.session_id + 1
         
     def max_velocity_changed_callback(self,val):
         self.ballPlotterCont.set_max_velocity(val)

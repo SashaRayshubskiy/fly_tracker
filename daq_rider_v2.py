@@ -69,7 +69,12 @@ class DAQRider:
         
         # Assumes the 3-way pinch valves 
         # have air by default
-        if valve_state_str == 'Both_Air': 
+        if valve_state_str == 'Both_Air' or \
+           valve_state_str == 'Both_Air_Rev' or \
+           valve_state_str == 'Left_Air' or \
+           valve_state_str == 'Left_Air_Rev' or \
+           valve_state_str == 'Right_Air' or \
+           valve_state_str == 'Right_Air_Rev': 
             self.pv_s = [ 0, 0, 0, 0 ]
         elif valve_state_str == 'Both_Odor':
             self.pv_s = [ 1, 1, 1, 1 ]
@@ -77,10 +82,6 @@ class DAQRider:
             self.pv_s = [ 0, 0, 1, 1 ]
         elif valve_state_str == 'Left_Odor':  
             self.pv_s = [ 1, 1, 0, 0 ]
-        elif valve_state_str == 'Left_Air':  
-            self.pv_s = [ 0, 0, 0, 0 ]
-        elif valve_state_str == 'Right_Air':  
-            self.pv_s = [ 0, 0, 0, 0 ]
         else:
             print "ERROR: valve_state_str not recognized: ", valve_state_str        
         
