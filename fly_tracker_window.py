@@ -7,6 +7,7 @@ from fly_tracker_gui_auto import Ui_FlyTracker
 from camera_acq import *
 #from syringe_pumper_chemyx import *
 from syringe_pumper_new_era import *
+
 from daq_rider_v2 import *
 from fly_tracker_trialer import *
 from fly_tracker_ball_tracker import *
@@ -36,6 +37,8 @@ class FlyTrackerWindow(QMainWindow):
         self.ui.withdraw_button.clicked.connect(self.withdraw_clicked_callback)
         self.ui.run_button.clicked.connect(self.run_clicked_callback)
         self.ui.choose_dir_button.clicked.connect(self.choose_dir_clicked_callback)        
+        self.ui.choose_task_file_button.clicked.connect(self.choose_task_file_clicked_callback)
+
 
         # Create UI text edit connections 
         self.ui.rate_box.valueChanged.connect(self.rate_changed_callback)
@@ -48,12 +51,15 @@ class FlyTrackerWindow(QMainWindow):
         self.ui.trial_period_box.valueChanged.connect(self.trial_period_changed_callback)
         self.ui.num_trials_box.valueChanged.connect(self.num_trials_changed_callback)
         self.ui.max_velocity.valueChanged.connect(self.max_velocity_changed_callback)
+        self.ui.using2p_toggle.toggled.connect(self.using2p_toggle_changed_callback)
+        self.ui.session_id_box.valueChanged.connect(self.session_id_changed_callback)
 
         self.ui.stim_type.currentIndexChanged['QString'].connect(self.stim_type_changed_callback)
 
         # Init GUI variables
+        self.task_file       = '/home/sasha/fly_tracker/task_file.txt'
         self.experimentDir   = None
-        self.syringe_size     = self.ui.syringe_size_box.value()
+        self.syringe_size    = self.ui.syringe_size_box.value()
         self.prate           = self.ui.rate_box.value()
         self.stim_prate      = self.ui.stim_prate_box.value()
         self.flush_prate     = self.ui.flush_prate_box.value()
@@ -63,6 +69,8 @@ class FlyTrackerWindow(QMainWindow):
         self.flush_t         = self.ui.flush_box.value()
         self.trial_period_t  = self.ui.trial_period_box.value()
         self.stim_type       = self.ui.stim_type.currentText()
+        self.using2p         = self.ui.using2p_toggle.isChecked() 
+        self.session_id      = self.ui.session_id_box.value()
 
         # Set the experiment directory
         self.choose_dir_clicked_callback(0)
@@ -73,6 +81,12 @@ class FlyTrackerWindow(QMainWindow):
     def closeEvent(self, event):
         self.finalize()        
         event.accept() # let the window close
+
+    def session_id_changed_callback(self,val):
+        self.session_id = val
+
+    def using2p_toggle_changed_callback(self, val):
+        self.using2p = val
 
     def stim_type_changed_callback(self, val):        
         self.stim_type = val # recorded as text
@@ -106,6 +120,16 @@ class FlyTrackerWindow(QMainWindow):
 
     def num_trials_changed_callback(self, val):
         self.num_trials = val
+
+    def choose_task_file_clicked_callback(self, val):
+        rc = QFileDialog.getOpenFileName(self,
+                                         "Choose a task file", 
+                                         "/home/sasha/fly_tracker/")
+        self.task_file = rc[0]
+
+        print self.task_file
+
+        self.ui.task_file_dir.setPlainText( self.task_file )        
 
     def choose_dir_clicked_callback(self, val):
                 
@@ -179,7 +203,11 @@ class FlyTrackerWindow(QMainWindow):
         self.th.start_trials( self.num_trials, self.pre_stim_t, 
                               self.stim_t, self.flush_t, 
                               self.trial_period_t, self.stim_type, 
-                              self.stim_prate, self.flush_prate, self.experimentDir )
+                              self.stim_prate, self.flush_prate, 
+                              self.using2p,
+                              self.experimentDir,
+                              self.task_file,
+                              self.session_id )
         
     def max_velocity_changed_callback(self,val):
         self.ballPlotterCont.set_max_velocity(val)

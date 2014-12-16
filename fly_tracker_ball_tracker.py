@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import  QWidget
 from PyQt5.QtCore import *
 
 import matplotlib
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from fly_tracker_utils import get_all_from_queue

@@ -2,8 +2,8 @@
 
 # Form implementation generated from reading ui file 'fly_tracker_gui.ui'
 #
-# Created: Sun Nov  2 16:58:59 2014
-#      by: PyQt5 UI code generator 5.3.1
+# Created: Tue Nov 25 16:18:41 2014
+#      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_FlyTracker(object):
     def setupUi(self, FlyTracker):
         FlyTracker.setObjectName("FlyTracker")
-        FlyTracker.resize(1372, 886)
+        FlyTracker.resize(1377, 886)
         FlyTracker.setMaximumSize(QtCore.QSize(140000, 140000))
         self.centralwidget = QtWidgets.QWidget(FlyTracker)
         self.centralwidget.setObjectName("centralwidget")
@@ -75,7 +75,7 @@ class Ui_FlyTracker(object):
         self.cummulative_run.setFrameShadow(QtWidgets.QFrame.Raised)
         self.cummulative_run.setObjectName("cummulative_run")
         self.run_button = QtWidgets.QPushButton(self.centralwidget)
-        self.run_button.setGeometry(QtCore.QRect(136, 712, 157, 59))
+        self.run_button.setGeometry(QtCore.QRect(130, 760, 157, 59))
         self.run_button.setObjectName("run_button")
         self.num_trials_box = QtWidgets.QSpinBox(self.centralwidget)
         self.num_trials_box.setGeometry(QtCore.QRect(16, 590, 91, 27))
@@ -157,6 +157,7 @@ class Ui_FlyTracker(object):
         self.stim_type.addItem("")
         self.stim_type.addItem("")
         self.stim_type.addItem("")
+        self.stim_type.addItem("")
         self.label_5 = QtWidgets.QLabel(self.centralwidget)
         self.label_5.setGeometry(QtCore.QRect(130, 644, 66, 17))
         font = QtGui.QFont()
@@ -219,12 +220,37 @@ class Ui_FlyTracker(object):
         font.setPointSize(10)
         self.label_11.setFont(font)
         self.label_11.setObjectName("label_11")
+        self.using2p_toggle = QtWidgets.QRadioButton(self.centralwidget)
+        self.using2p_toggle.setGeometry(QtCore.QRect(210, 640, 116, 22))
+        self.using2p_toggle.setChecked(True)
+        self.using2p_toggle.setObjectName("using2p_toggle")
+        self.choose_task_file_button = QtWidgets.QToolButton(self.centralwidget)
+        self.choose_task_file_button.setGeometry(QtCore.QRect(306, 698, 24, 25))
+        self.choose_task_file_button.setPopupMode(QtWidgets.QToolButton.DelayedPopup)
+        self.choose_task_file_button.setArrowType(QtCore.Qt.NoArrow)
+        self.choose_task_file_button.setObjectName("choose_task_file_button")
+        self.task_file_dir = QtWidgets.QPlainTextEdit(self.centralwidget)
+        self.task_file_dir.setGeometry(QtCore.QRect(10, 700, 291, 21))
+        font = QtGui.QFont()
+        font.setPointSize(9)
+        self.task_file_dir.setFont(font)
+        self.task_file_dir.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.task_file_dir.setObjectName("task_file_dir")
+        self.label_12 = QtWidgets.QLabel(self.centralwidget)
+        self.label_12.setGeometry(QtCore.QRect(10, 682, 71, 17))
+        self.label_12.setObjectName("label_12")
+        self.label_13 = QtWidgets.QLabel(self.centralwidget)
+        self.label_13.setGeometry(QtCore.QRect(350, 680, 71, 17))
+        self.label_13.setObjectName("label_13")
+        self.session_id_box = QtWidgets.QSpinBox(self.centralwidget)
+        self.session_id_box.setGeometry(QtCore.QRect(350, 700, 60, 27))
+        self.session_id_box.setObjectName("session_id_box")
         FlyTracker.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(FlyTracker)
         self.statusbar.setObjectName("statusbar")
         FlyTracker.setStatusBar(self.statusbar)
         self.menubar = QtWidgets.QMenuBar(FlyTracker)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1372, 27))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1377, 25))
         self.menubar.setObjectName("menubar")
         FlyTracker.setMenuBar(self.menubar)
 
@@ -258,8 +284,13 @@ class Ui_FlyTracker(object):
         self.stim_type.setItemText(4, _translate("FlyTracker", "Right_Odor"))
         self.stim_type.setItemText(5, _translate("FlyTracker", "Left_Air"))
         self.stim_type.setItemText(6, _translate("FlyTracker", "Right_Air"))
+        self.stim_type.setItemText(7, _translate("FlyTracker", "Task_File"))
         self.label_5.setText(_translate("FlyTracker", "Stim Type"))
         self.label_9.setText(_translate("FlyTracker", "Max velocity "))
         self.label_10.setText(_translate("FlyTracker", "Stim Rate (mL/min)"))
         self.label_11.setText(_translate("FlyTracker", "Flush rate (mL/min)"))
+        self.using2p_toggle.setText(_translate("FlyTracker", "Using 2p?"))
+        self.choose_task_file_button.setText(_translate("FlyTracker", "..."))
+        self.label_12.setText(_translate("FlyTracker", "Tasks file:"))
+        self.label_13.setText(_translate("FlyTracker", "Session Id:"))
 
