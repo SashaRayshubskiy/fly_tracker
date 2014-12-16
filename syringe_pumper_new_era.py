@@ -10,6 +10,7 @@ class SyringePumper:
     def __init__(self, start_t, syringe_size, prate):      
 
         self.start_t = start_t
+        self.syringe_size = syringe_size
 
         # Connect to serial port for syringe pump control
         self.ser_s = serial.Serial('/dev/ttyS0', baudrate=19200)
@@ -20,6 +21,18 @@ class SyringePumper:
         self.syringe_diameter = self.get_diameter( self.syringe_size )        
         self.set_syringe_size(syringe_size)
         self.withdraw()
+
+    def get_max_rate(self):
+        if self.syringe_size == 10.0:
+            return 10.13
+        elif self.syringe_size == 20.0:
+            return 16.10
+        elif self.syringe_size == 30.0:
+            return 21.0
+        elif self.syringe_size == 60.0:
+            return 35.33
+        else:
+            print "ERROR: Please set max rate for syringe volume: " % (self.syringe_vol)
 
     def get_diameter(self, syringe_size):
         diameter = -1
@@ -33,7 +46,8 @@ class SyringePumper:
             diameter = 26.72
         else:
             print "ERROR: set syringe size to diameter mapping for size: %f" % ( syringe_size )
-            return diameter        
+    
+        return diameter        
 
     def write_to_serial_sock(self, str):
         self.ser_s.write(str + "\r")
@@ -109,9 +123,12 @@ class SyringePumper:
         self.write_to_serial_sock("1 DIR WDR * 2 DIR WDR *")
 
     def start(self):
+        t0 = time.time()
         if self.debug: 
             print "(%f): called start" % (time.time()-self.start_t)
         self.write_to_serial_sock("1 RUN * 2 RUN *")
+        t1 = time.time()
+        return t1-t0
 
     def start_left(self):
         if self.debug: 

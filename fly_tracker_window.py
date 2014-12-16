@@ -5,8 +5,9 @@ from PyQt5.QtCore import *
 from fly_tracker_gui_auto import Ui_FlyTracker
 
 from camera_acq import *
-from syringe_pumper_chemyx import *
-from daq_rider import *
+#from syringe_pumper_chemyx import *
+from syringe_pumper_new_era import *
+from daq_rider_v2 import *
 from fly_tracker_trialer import *
 from fly_tracker_ball_tracker import *
 
