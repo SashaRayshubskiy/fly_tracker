@@ -12,7 +12,7 @@ import scipy.io
 
 from syringe_pumper_new_era import *
 from scanimage_client import *
-from daq_rider_v2 import *
+from daq_rider_hw import *
 
 from threading import Timer, Event
 import matplotlib
@@ -391,12 +391,21 @@ class FlyTrialer(QThread):
         # Prepare valves for stim
         self.dr.activate_pinch_valves( stim_type )
         
-        if stim_type == 'Left_Air' or stim_type == 'Left_Air_Rev':
-            self.dr.activate_3way_valve_left()
-        elif stim_type == 'Right_Air' or stim_type == 'Right_Air_Rev':
-            self.dr.activate_3way_valve_right()
-        else:
-            self.dr.activate_3way_valves()
+        ### TEMPORARY FIX for HW stim
+        #if stim_type == 'Left_Air' or stim_type == 'Left_Air_Rev':
+        #    self.dr.activate_3way_valve_left()
+        #elif stim_type == 'Right_Air' or stim_type == 'Right_Air_Rev':
+        #    self.dr.activate_3way_valve_right()
+        #else:
+        #    self.dr.activate_3way_valves()
+        self.dr.activate_3way_valve_left()
+        print "WARNING: FIX THIS FOR NONE HW STIMS"
+        print "WARNING: FIX THIS FOR NONE HW STIMS"
+        print "WARNING: FIX THIS FOR NONE HW STIMS"
+        print "WARNING: FIX THIS FOR NONE HW STIMS"
+        print "WARNING: FIX THIS FOR NONE HW STIMS"
+        print "WARNING: FIX THIS FOR NONE HW STIMS"
+        ### TEMPORARY FIX for HW stim
         
         # CAREFUL: BEGIN trial timing
         # Pause for 10 seconds before starting stim, as per Gaudry et al.
@@ -437,6 +446,9 @@ class FlyTrialer(QThread):
 
         # Set pinch valves for 'Both Air'
         self.dr.activate_pinch_valves('Both_Air')
+
+        # Delay between stim and flush (in sec)
+        time.sleep(5.0)
 
         # Start flush
         t = self.sp.start()

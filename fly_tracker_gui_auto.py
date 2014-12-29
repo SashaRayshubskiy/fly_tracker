@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'fly_tracker_gui.ui'
 #
-# Created: Wed Dec  3 20:20:22 2014
+# Created: Tue Dec 16 15:44:49 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -51,7 +51,7 @@ class Ui_FlyTracker(object):
         font.setPointSize(9)
         self.syringe_size_box.setFont(font)
         self.syringe_size_box.setDecimals(1)
-        self.syringe_size_box.setProperty("value", 30.0)
+        self.syringe_size_box.setProperty("value", 60.0)
         self.syringe_size_box.setObjectName("syringe_size_box")
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(62, 162, 97, 17))

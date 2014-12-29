@@ -143,7 +143,7 @@
      <number>1</number>
     </property>
     <property name="value">
-     <double>30.000000000000000</double>
+     <double>60.000000000000000</double>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">

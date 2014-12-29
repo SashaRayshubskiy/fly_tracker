@@ -8,7 +8,7 @@ from daq_rider_v2 import *
 dr = DAQRider(time.time())
 #dr.activate_2p_olfactometer_trigger()
 #dr.activate_2p_external_trigger()
-#dr0.activate_pinch_valves(sys.argv[1])
+#dr.activate_pinch_valves(sys.argv[1])
 #dr.activate_3way_valve_left()
 #dr.activate_3way_valves()
 #time.sleep(3)
@@ -23,5 +23,9 @@ elif command == 'Both':
     dr.activate_3way_valves()
 elif command == 'Close':
     dr.deactivate_3way_valves()
+elif command == 'PinchOpen':
+    dr.activate_pinch_valves(sys.argv[2])
+elif command == 'PinchClose':
+    dr.deactivate_pinch_valves()
 
 dr.close()
