@@ -375,11 +375,71 @@ class FlyTrialer(QThread):
             
     def run_trial(self, trial_ord, stim_type):
 
+        if stim_type == 'Simple_Odor':
+            return self.run_trial_simple_natural_odor(trial_ord, stim_type)
+
         #return self.run_trial_natural_odor(trial_ord, stim_type)
         if self.using_optostim:
             return self.run_trial_optostim(trial_ord, stim_type)
         else:
-            return self.run_trial_natural_odor(trial_ord, stim_type)
+            return self.run_trial_natural_odor(trial_ord, stim_type)            
+
+    def run_trial_simple_natural_odor(self, trial_ord, stim_type):
+        # Reset all daq board channels
+        self.dr.reset_all()
+
+        ####
+        ## Start trial, acquire ball data and camera data to save
+        ####
+        if self.using2p:
+            self.sleep_with_status_update(1.0, "Sleep before activating 2p trigger")            
+            print '(%f): Activating 2p trigger' % (time.time())
+            self.dr.activate_2p_external_trigger()
+
+        # CAREFUL: BEGIN trial timing
+        # First clear the trial queue, and add time point 0
+        # This is neccessary because the event based system, might not have 
+        # a time point 0 until the first event
+        self.trial_data_q.queue.clear()
+        self.trial_data_q.put( (time.time(), 0, 0) )
+        self.trial_ball_data_acq_start_event.set()
+        print "Set the trial ball time: %f" % ( time.time() )
+
+        self.sleep_with_status_update(self.pre_stim_t, "Data Acq::Baseline")
+
+        # Prepare valves for stim
+        self.dr.activate_simple_odor_valve_channel()                        
+        
+        # Start stim
+        print "(%f): About to start stim for %f seconds" % (time.time()-self.start_t, self.stim_t)
+
+        time.sleep(self.stim_t)
+        self.dr.deactivate_simple_odor_valve_channel()                        
+
+        # Start post-stim interval
+        self.sleep_with_status_update(self.flush_t, "Post-stim interval")
+        # CAREFUL: END trial timing
+
+        # Ready to read trial data
+        print "Clearing the trial ball time: %f" % ( time.time() )
+        self.trial_ball_data_acq_start_event.clear()
+
+        # Lastly add a time point, this is neccessary because the 
+        # event based system might not have a time point at the end.
+        self.trial_data_q.put( (time.time(), 0, 0) )
+
+        if self.using2p:
+            self.sleep_with_status_update(1.0, "Sleep before deactivating 2p trigger")
+            print '(%f): Deactivating 2p trigger' % (time.time())
+            self.dr.deactivate_2p_external_trigger()
+
+        self.dr.reset_all()
+
+        # Trial data ready to plot
+        # Read data from queue
+        qdata = list( get_all_from_queue( self.trial_data_q ) )
+
+        return qdata        
 
     def run_trial_optostim(self, trial_ord, stim_type):
         # Reset all daq board channels

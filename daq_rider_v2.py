@@ -37,7 +37,15 @@ class DAQRider:
 
         self.pv_s = [ 0, 0, 0, 0 ]
 
+        self.SIMPLE_ODOR_VALVE_CHANNEL = 0
+
         self.reset_all()
+
+    def activate_simple_odor_valve_channel(self):
+        self.dio_chans[ self.SIMPLE_ODOR_VALVE_CHANNEL ].dio_write( 1 )
+
+    def deactivate_simple_odor_valve_channel(self):
+        self.dio_chans[ self.SIMPLE_ODOR_VALVE_CHANNEL ].dio_write( 0 )
 
     def activate_2p_olfactometer_trigger(self):
         self.dio_chans[ 7 ].dio_write( 1 )

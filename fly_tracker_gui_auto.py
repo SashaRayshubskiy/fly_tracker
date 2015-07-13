@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'fly_tracker_gui.ui'
 #
-# Created: Mon Jul 13 18:15:32 2015
+# Created: Mon Jul 13 18:30:17 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -288,7 +288,7 @@ class Ui_FlyTracker(object):
         self.label_7.setText(_translate("FlyTracker", "Experiment directory:"))
         self.label_8.setText(_translate("FlyTracker", "Trial Period (s)"))
         self.stim_type.setItemText(0, _translate("FlyTracker", "Random"))
-        self.stim_type.setItemText(1, _translate("FlyTracker", "Natural_Odor"))
+        self.stim_type.setItemText(1, _translate("FlyTracker", "Simple_Odor"))
         self.stim_type.setItemText(2, _translate("FlyTracker", "Task_File"))
         self.stim_type.setItemText(3, _translate("FlyTracker", "Both_Air"))
         self.stim_type.setItemText(4, _translate("FlyTracker", "Both_Odor"))
