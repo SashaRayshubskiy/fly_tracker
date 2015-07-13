@@ -91,17 +91,18 @@ class DAQRider:
             
         print "(%f): Activated pinch valves to: %s" % (time.time()-self.start_t, valve_state_str)
 
-    def close(self):
-        self.daq_s.close()
-        
-    def reset_all(self):
-        
-        self.deactivate_2p_external_trigger()
-        self.deactivate_3way_valves()
-        self.deactivate_2p_olfactometer_trigger()
-    
+    def deactivate_pinch_valves(self):
         # deactivate dio channels
         self.pv_s = [ 0, 0, 0, 0 ]
         
         for i, s in enumerate(self.pv_s):
-            self.dio_chans[ i ].dio_write( s )
+            self.dio_chans[ i ].dio_write( s )        
+
+    def close(self):
+        self.daq_s.close()
+        
+    def reset_all(self):        
+        self.deactivate_2p_external_trigger()
+        self.deactivate_3way_valves()
+        self.deactivate_2p_olfactometer_trigger()
+        self.deactivate_pinch_valves()

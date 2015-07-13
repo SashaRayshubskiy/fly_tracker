@@ -143,7 +143,7 @@
      <number>1</number>
     </property>
     <property name="value">
-     <double>60.000000000000000</double>
+     <double>50.000000000000000</double>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">
@@ -235,7 +235,7 @@
      <number>1000</number>
     </property>
     <property name="value">
-     <number>1</number>
+     <number>100</number>
     </property>
    </widget>
    <widget class="QLabel" name="label_3">
@@ -269,7 +269,7 @@
      <number>1</number>
     </property>
     <property name="value">
-     <double>5.000000000000000</double>
+     <double>3.000000000000000</double>
     </property>
    </widget>
    <widget class="QLabel" name="label_4">
@@ -321,7 +321,7 @@
      <number>1</number>
     </property>
     <property name="value">
-     <double>10.000000000000000</double>
+     <double>0.500000000000000</double>
     </property>
    </widget>
    <widget class="QDoubleSpinBox" name="pre_stim_box">
@@ -337,7 +337,7 @@
      <number>1</number>
     </property>
     <property name="value">
-     <double>5.000000000000000</double>
+     <double>3.000000000000000</double>
     </property>
    </widget>
    <widget class="QLabel" name="label_6">
@@ -439,7 +439,7 @@
      <number>1</number>
     </property>
     <property name="value">
-     <double>10.000000000000000</double>
+     <double>5.000000000000000</double>
     </property>
    </widget>
    <widget class="QComboBox" name="stim_type">
@@ -454,6 +454,16 @@
     <item>
      <property name="text">
       <string>Random</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Natural_Odor</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Task_File</string>
      </property>
     </item>
     <item>
@@ -484,11 +494,6 @@
     <item>
      <property name="text">
       <string>Right_Air</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Task_File</string>
      </property>
     </item>
     <item>
@@ -708,7 +713,10 @@
      <string>Using 2p?</string>
     </property>
     <property name="checked">
-     <bool>true</bool>
+     <bool>false</bool>
+    </property>
+    <property name="autoExclusive">
+     <bool>false</bool>
     </property>
    </widget>
    <widget class="QToolButton" name="choose_task_file_button">
@@ -782,6 +790,25 @@
       <width>60</width>
       <height>27</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="using_optostim_toggle_2">
+    <property name="geometry">
+     <rect>
+      <x>330</x>
+      <y>640</y>
+      <width>116</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Opto-stim</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+    <property name="autoExclusive">
+     <bool>false</bool>
     </property>
    </widget>
   </widget>

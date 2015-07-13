@@ -10,9 +10,11 @@ from datetime import datetime
 
 import scipy.io
 
-from syringe_pumper_new_era import *
+#from syringe_pumper_new_era import *
+from syringe_pumper_chemyx import *
+
 from scanimage_client import *
-from daq_rider_hw import *
+from daq_rider_v2 import *
 
 from threading import Timer, Event
 import matplotlib
@@ -67,7 +69,10 @@ class FlyTrialer(QThread):
         self.stim_type_d['Left_Air'] = 'LA'
         self.stim_type_d['Right_Air'] = 'RA'
 
-        self.stim_type_for_random = [ 'Both_Air', 'Both_Odor', 'Left_Odor', 'Right_Odor', 'Left_Air', 'Right_Air' ]
+        # self.stim_type_for_random = [ 'Both_Air', 'Both_Odor', 'Left_Odor', 'Right_Odor', 'Left_Air', 'Right_Air' ]
+        #self.stim_type_for_random = [ 'Both_Air', 'Both_Odor', 'Left_Odor', 'Right_Odor' ]     
+        self.stim_type_for_random = [ 'Both_Odor', 'Left_Odor', 'Right_Odor' ]
+
         self.stim_type_color_d = {}
         self.stim_type_color_d['Both_Air'] = 'black'
         self.stim_type_color_d['Both_Odor'] = 'blue'
@@ -103,6 +108,8 @@ class FlyTrialer(QThread):
 
         self.task_file_data = None
         self.SIclient = None
+
+        self.no_data_trial = 0
         
         self.start()                    
 
@@ -135,7 +142,9 @@ class FlyTrialer(QThread):
                 self.fig2.canvas.draw()
 
                 stim_type = None
-                
+
+                self.no_data_trial = 0
+
                 run_stim_types = []
 
                 first_time_labels_d = {}
@@ -150,7 +159,7 @@ class FlyTrialer(QThread):
                         trial_types_d.append( stim_type_idx )
 
                 # Save basedir
-                savedatabase =  self.experimentDir + '/' + datetime.now().strftime( self.FORMAT ) 
+                savedatabase =  self.experimentDir + '/' + datetime.now().strftime( self.FORMAT ) + '_sid_' + str(self.session_id)
 
                 self.ball_plotter_cont.flush_off()
 
@@ -218,6 +227,7 @@ class FlyTrialer(QThread):
                         # Find the x,y value corresponding to the start of stim
                         # label this value with an 'X'
                         t_plot = np.asarray( t ) - t[ 0 ]
+                        print 'Max time: ', max(t_plot)
                                                 
                         t_plot_stim = np.where( t_plot > self.stim_t )
                         t_idx = t_plot_stim[0]
@@ -260,12 +270,14 @@ class FlyTrialer(QThread):
                             self.fig2.savefig( datapathbase + '_xy_t.eps', format='eps', dpi=1000, bbox_inches='tight')
                             self.fig2.savefig( datapathbase + '_xy_t.png', format='png', dpi=1000, bbox_inches='tight')
                     else:
-                        print 'WARNING: Trial produced no data, the fly wasn\'t moving'
-                        # Send warning email
-                        flyId = os.path.basename( self.experimentDir )
-                        #FNULL = open(os.devnull, 'w')
-                        #call(['mail', '-s', 'WARNING:: %s: trial %d produced no data.' % (flyId,i), 'druzhiche@gmail.com'], stdin=FNULL )
-                        #FNULL.close()
+                        if self.no_data_trial == 4:
+                            print 'WARNING: Trial produced no data, the fly wasn\'t moving'
+                            # Send warning email
+                            flyId = os.path.basename( self.experimentDir )
+                            FNULL = open(os.devnull, 'w')
+                            call(['mail', '-s', 'WARNING:: %s: trial %d produced no data.' % (flyId,i), 'druzhiche@gmail.com'], stdin=FNULL )
+                            FNULL.close()
+                        self.no_data_trial = self.no_data_trial + 1
 
                     if self.num_trials > 1 and i != self.num_trials-1:
                         # Pause
@@ -302,7 +314,7 @@ class FlyTrialer(QThread):
         t1 = time.time()
         print 'Sleep_t: %f   sleep call time actual: %f' % ( sleep_t, t1-t0 )
 
-    def start_trials(self, num_trials, pre_stim_t, stim_t, flush_t, trial_period_t, stim_type, stim_prate, flush_prate, using2p, experiment_dir, task_file, session_id ):
+    def start_trials(self, num_trials, pre_stim_t, stim_t, flush_t, trial_period_t, stim_type, stim_prate, flush_prate, using2p, using_optostim, experiment_dir, task_file, session_id ):
         
         if experiment_dir == None:
             print "ERROR: Please set the experiment directory path"
@@ -319,6 +331,7 @@ class FlyTrialer(QThread):
         self.trial_period_t  = trial_period_t
         self.stim_type_selected = stim_type
         self.using2p            = using2p
+        self.using_optostim     = using_optostim
         self.session_id         = session_id
 
         if self.stim_type_selected == 'Task_File':
@@ -337,7 +350,7 @@ class FlyTrialer(QThread):
             self.SIclient = SI_Client() 
 
         # Write a log file with run parameters
-        log_filename =  self.experimentDir + '/' + datetime.now().strftime( self.FORMAT ) + '_' + 'run.log'
+        log_filename =  self.experimentDir + '/' + datetime.now().strftime( self.FORMAT ) + '_sid_' + str(self.session_id) + '_' + 'run.log'
         with open(log_filename, 'a') as log_file:
             log_file.write('stim pump rate: %f\n' % (self.stim_prate))
             log_file.write('flush pump rate: %f\n' % (self.flush_prate))
@@ -347,6 +360,7 @@ class FlyTrialer(QThread):
             log_file.write('flush: %f\n' % (self.flush_t))
             log_file.write('trial period: %f\n' % (self.trial_period_t))
             log_file.write('stim type: %s\n' % (self.stim_type_selected))
+            log_file.write('sid: %d\n' % (self.session_id))
 
             if self.stim_type_selected == 'Task_File':
                 log_file.write( '\n\n' )
@@ -360,6 +374,71 @@ class FlyTrialer(QThread):
         self.trial_start_event.set()         
             
     def run_trial(self, trial_ord, stim_type):
+
+        #return self.run_trial_natural_odor(trial_ord, stim_type)
+        if self.using_optostim:
+            return self.run_trial_optostim(trial_ord, stim_type)
+        else:
+            return self.run_trial_natural_odor(trial_ord, stim_type)
+
+    def run_trial_optostim(self, trial_ord, stim_type):
+        # Reset all daq board channels
+        self.dr.reset_all()
+
+        ####
+        ## Start trial, acquire ball data and camera data to save
+        ####
+        if self.using2p:
+            self.sleep_with_status_update(1.0, "Sleep before activating 2p trigger")            
+            print '(%f): Activating 2p trigger' % (time.time())
+            self.dr.activate_2p_external_trigger()
+
+        # CAREFUL: BEGIN trial timing
+        # First clear the trial queue, and add time point 0
+        # This is neccessary because the event based system, might not have 
+        # a time point 0 until the first event
+        self.trial_data_q.queue.clear()
+        self.trial_data_q.put( (time.time(), 0, 0) )
+        self.trial_ball_data_acq_start_event.set()
+        print "Set the trial ball time: %f" % ( time.time() )
+
+        self.sleep_with_status_update(self.pre_stim_t, "Data Acq::Baseline")
+
+        # Prepare valves for stim
+        self.dr.activate_pinch_valves( stim_type )                        
+        
+        # Start stim
+        print "(%f): About to start stim for %f seconds" % (time.time()-self.start_t, self.stim_t)
+
+        time.sleep(self.stim_t)
+        self.dr.deactivate_pinch_valves()
+
+        # Start post-stim interval
+        self.sleep_with_status_update(self.flush_t, "Post-stim interval")
+        # CAREFUL: END trial timing
+
+        # Ready to read trial data
+        print "Clearing the trial ball time: %f" % ( time.time() )
+        self.trial_ball_data_acq_start_event.clear()
+
+        # Lastly add a time point, this is neccessary because the 
+        # event based system might not have a time point at the end.
+        self.trial_data_q.put( (time.time(), 0, 0) )
+
+        if self.using2p:
+            self.sleep_with_status_update(1.0, "Sleep before deactivating 2p trigger")
+            print '(%f): Deactivating 2p trigger' % (time.time())
+            self.dr.deactivate_2p_external_trigger()
+
+        self.dr.reset_all()
+
+        # Trial data ready to plot
+        # Read data from queue
+        qdata = list( get_all_from_queue( self.trial_data_q ) )
+
+        return qdata        
+        
+    def run_trial_natural_odor(self, trial_ord, stim_type):
         
         # Reset all daq board channels
         self.dr.reset_all()
@@ -391,20 +470,21 @@ class FlyTrialer(QThread):
         # Prepare valves for stim
         self.dr.activate_pinch_valves( stim_type )
         
+        if stim_type == 'Left_Air' or stim_type == 'Left_Air_Rev':
+            self.dr.activate_3way_valve_left()
+        elif stim_type == 'Right_Air' or stim_type == 'Right_Air_Rev':
+            self.dr.activate_3way_valve_right()
+        else:
+            self.dr.activate_3way_valves()
+
         ### TEMPORARY FIX for HW stim
-        #if stim_type == 'Left_Air' or stim_type == 'Left_Air_Rev':
-        #    self.dr.activate_3way_valve_left()
-        #elif stim_type == 'Right_Air' or stim_type == 'Right_Air_Rev':
-        #    self.dr.activate_3way_valve_right()
-        #else:
-        #    self.dr.activate_3way_valves()
-        self.dr.activate_3way_valve_left()
-        print "WARNING: FIX THIS FOR NONE HW STIMS"
-        print "WARNING: FIX THIS FOR NONE HW STIMS"
-        print "WARNING: FIX THIS FOR NONE HW STIMS"
-        print "WARNING: FIX THIS FOR NONE HW STIMS"
-        print "WARNING: FIX THIS FOR NONE HW STIMS"
-        print "WARNING: FIX THIS FOR NONE HW STIMS"
+        #self.dr.activate_3way_valve_left()
+        #print "WARNING: FIX THIS FOR NONE HW STIMS"
+        #print "WARNING: FIX THIS FOR NONE HW STIMS"
+        #print "WARNING: FIX THIS FOR NONE HW STIMS"
+        #print "WARNING: FIX THIS FOR NONE HW STIMS"
+        #print "WARNING: FIX THIS FOR NONE HW STIMS"
+        #print "WARNING: FIX THIS FOR NONE HW STIMS"
         ### TEMPORARY FIX for HW stim
         
         # CAREFUL: BEGIN trial timing

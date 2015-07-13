@@ -12,7 +12,6 @@ dr = DAQRider(time.time())
 #dr.activate_3way_valve_left()
 #dr.activate_3way_valves()
 #time.sleep(3)
-#dr.reset_all()
 command = sys.argv[1]
 
 if command  == 'Left':
@@ -27,5 +26,11 @@ elif command == 'PinchOpen':
     dr.activate_pinch_valves(sys.argv[2])
 elif command == 'PinchClose':
     dr.deactivate_pinch_valves()
+elif command == 'Activate2p':
+    dr.activate_2p_external_trigger()
+elif command == 'Deactivate2p':
+    dr.deactivate_2p_external_trigger()
 
+time.sleep( 3 )
+dr.reset_all()
 dr.close()

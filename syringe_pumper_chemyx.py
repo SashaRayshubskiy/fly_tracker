@@ -28,6 +28,8 @@ class SyringePumper:
     def get_max_rate(self):
         if self.syringe_size == 30.0:
             return 36.0
+        elif self.syringe_size == 50.0:
+            return 56.0
         elif self.syringe_size == 60.0:
             return 56.0
         else:
@@ -95,6 +97,8 @@ class SyringePumper:
             diameter = 19.13
         elif syringe_size == 30.0:
             diameter = 21.69
+        elif syringe_size == 50.0:
+            diameter = 28.03
         elif syringe_size == 60.0:
             diameter = 26.72
         else:

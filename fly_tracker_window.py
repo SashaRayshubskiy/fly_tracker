@@ -5,10 +5,10 @@ from PyQt5.QtCore import *
 from fly_tracker_gui_auto import Ui_FlyTracker
 
 from camera_acq import *
-#from syringe_pumper_chemyx import *
-from syringe_pumper_new_era import *
+from syringe_pumper_chemyx import *
+#from syringe_pumper_new_era import *
 
-from daq_rider_hw import *
+from daq_rider_v2 import *
 from fly_tracker_trialer import *
 from fly_tracker_ball_tracker import *
 
@@ -52,6 +52,7 @@ class FlyTrackerWindow(QMainWindow):
         self.ui.num_trials_box.valueChanged.connect(self.num_trials_changed_callback)
         self.ui.max_velocity.valueChanged.connect(self.max_velocity_changed_callback)
         self.ui.using2p_toggle.toggled.connect(self.using2p_toggle_changed_callback)
+        self.ui.using_optostim_toggle_2.toggled.connect(self.using_optostim_changed_callback)
         self.ui.session_id_box.valueChanged.connect(self.session_id_changed_callback)
 
         self.ui.stim_type.currentIndexChanged['QString'].connect(self.stim_type_changed_callback)
@@ -70,6 +71,7 @@ class FlyTrackerWindow(QMainWindow):
         self.trial_period_t  = self.ui.trial_period_box.value()
         self.stim_type       = self.ui.stim_type.currentText()
         self.using2p         = self.ui.using2p_toggle.isChecked() 
+        self.using_optostim  = self.ui.using_optostim_toggle_2.isChecked() 
         self.session_id      = self.ui.session_id_box.value()
 
         # Set the experiment directory
@@ -87,6 +89,9 @@ class FlyTrackerWindow(QMainWindow):
 
     def using2p_toggle_changed_callback(self, val):
         self.using2p = val
+
+    def using_optostim_changed_callback(self, val):
+        self.using_optostim = val
 
     def stim_type_changed_callback(self, val):        
         self.stim_type = val # recorded as text
@@ -204,7 +209,7 @@ class FlyTrackerWindow(QMainWindow):
                               self.stim_t, self.flush_t, 
                               self.trial_period_t, self.stim_type, 
                               self.stim_prate, self.flush_prate, 
-                              self.using2p,
+                              self.using2p, self.using_optostim,
                               self.experimentDir,
                               self.task_file,
                               self.session_id )
