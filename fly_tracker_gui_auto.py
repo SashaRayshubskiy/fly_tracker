@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'fly_tracker_gui.ui'
 #
-# Created: Mon Jul 13 18:30:17 2015
+# Created: Tue Aug 18 18:05:33 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -111,12 +111,13 @@ class Ui_FlyTracker(object):
         self.stim_box.setProperty("value", 0.5)
         self.stim_box.setObjectName("stim_box")
         self.pre_stim_box = QtWidgets.QDoubleSpinBox(self.centralwidget)
-        self.pre_stim_box.setGeometry(QtCore.QRect(16, 488, 69, 27))
+        self.pre_stim_box.setGeometry(QtCore.QRect(16, 488, 111, 27))
         self.pre_stim_box.setDecimals(1)
+        self.pre_stim_box.setMaximum(10000.0)
         self.pre_stim_box.setProperty("value", 3.0)
         self.pre_stim_box.setObjectName("pre_stim_box")
         self.label_6 = QtWidgets.QLabel(self.centralwidget)
-        self.label_6.setGeometry(QtCore.QRect(94, 492, 85, 17))
+        self.label_6.setGeometry(QtCore.QRect(140, 490, 85, 17))
         font = QtGui.QFont()
         font.setPointSize(10)
         self.label_6.setFont(font)

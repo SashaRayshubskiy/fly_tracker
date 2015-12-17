@@ -14,7 +14,7 @@ import scipy.io
 from syringe_pumper_chemyx import *
 
 from scanimage_client import *
-from daq_rider_v2 import *
+from daq_rider_optostim import *
 
 from threading import Timer, Event
 import matplotlib
@@ -68,12 +68,16 @@ class FlyTrialer(QThread):
         self.stim_type_d['Right_Odor'] = 'RO'
         self.stim_type_d['Left_Air'] = 'LA'
         self.stim_type_d['Right_Air'] = 'RA'
+        self.stim_type_d['Simple_Odor'] = 'SO'
+        self.stim_type_d['Free_Run'] = 'FR'
 
         # self.stim_type_for_random = [ 'Both_Air', 'Both_Odor', 'Left_Odor', 'Right_Odor', 'Left_Air', 'Right_Air' ]
         #self.stim_type_for_random = [ 'Both_Air', 'Both_Odor', 'Left_Odor', 'Right_Odor' ]     
         self.stim_type_for_random = [ 'Both_Odor', 'Left_Odor', 'Right_Odor' ]
 
         self.stim_type_color_d = {}
+        self.stim_type_color_d['Simple_Odor'] = 'black'
+        self.stim_type_color_d['Free_Run'] = 'black'
         self.stim_type_color_d['Both_Air'] = 'black'
         self.stim_type_color_d['Both_Odor'] = 'blue'
         self.stim_type_color_d['Left_Odor'] = 'green'
@@ -191,7 +195,7 @@ class FlyTrialer(QThread):
                     trial_results.append( trial_data )
                     
                     # Will always have at least 2: {begin time, end time}
-                    if len(trial_data) > 2:
+                    if len(trial_data) >= 2:
                         t, dx, dy = zip(*trial_data)
                         
                         trial_data = {}
@@ -377,12 +381,58 @@ class FlyTrialer(QThread):
 
         if stim_type == 'Simple_Odor':
             return self.run_trial_simple_natural_odor(trial_ord, stim_type)
+        elif stim_type == 'Free_Run':
+            return self.run_trial_free_run(trial_ord, stim_type)
 
         #return self.run_trial_natural_odor(trial_ord, stim_type)
         if self.using_optostim:
             return self.run_trial_optostim(trial_ord, stim_type)
         else:
             return self.run_trial_natural_odor(trial_ord, stim_type)            
+
+    def run_trial_free_run(self, trial_ord, stim_type):
+        # Reset all daq board channels
+        self.dr.reset_all()
+
+        ####
+        ## Start trial, acquire ball data and camera data to save
+        ####
+        if self.using2p:
+            self.sleep_with_status_update(1.0, "Sleep before activating 2p trigger")            
+            print '(%f): Activating 2p trigger' % (time.time())
+            self.dr.activate_2p_external_trigger()
+
+        # CAREFUL: BEGIN trial timing
+        # First clear the trial queue, and add time point 0
+        # This is neccessary because the event based system, might not have 
+        # a time point 0 until the first event
+        self.trial_data_q.queue.clear()
+        self.trial_data_q.put( (time.time(), 0, 0) )
+        self.trial_ball_data_acq_start_event.set()
+        print "Set the trial ball time: %f" % ( time.time() )
+
+        self.sleep_with_status_update(self.pre_stim_t, "Data Acq::Baseline")        
+
+        # Ready to read trial data
+        print "Clearing the trial ball time: %f" % ( time.time() )
+        self.trial_ball_data_acq_start_event.clear()
+
+        # Lastly add a time point, this is neccessary because the 
+        # event based system might not have a time point at the end.
+        self.trial_data_q.put( (time.time(), 0, 0) )
+
+        if self.using2p:
+            self.sleep_with_status_update(1.0, "Sleep before deactivating 2p trigger")
+            print '(%f): Deactivating 2p trigger' % (time.time())
+            self.dr.deactivate_2p_external_trigger()
+
+        self.dr.reset_all()
+
+        # Trial data ready to plot
+        # Read data from queue
+        qdata = list( get_all_from_queue( self.trial_data_q ) )
+
+        return qdata        
 
     def run_trial_simple_natural_odor(self, trial_ord, stim_type):
         # Reset all daq board channels

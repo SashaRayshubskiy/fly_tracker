@@ -8,7 +8,7 @@ from camera_acq import *
 from syringe_pumper_chemyx import *
 #from syringe_pumper_new_era import *
 
-from daq_rider_v2 import *
+from daq_rider_optostim import *
 from fly_tracker_trialer import *
 from fly_tracker_ball_tracker import *
 
